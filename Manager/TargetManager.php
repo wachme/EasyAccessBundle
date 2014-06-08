@@ -44,6 +44,9 @@ class TargetManager implements TargetManagerInterface {
      * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::createClass()
      */
     public function createClass($class) {
+        if($this->findByClass($class, false))
+            throw new \Exception("Target for class {$class} already exists");
+        
         return $this->createTarget(static::$classTargetClass, $class);
     }
     /**
@@ -52,8 +55,17 @@ class TargetManager implements TargetManagerInterface {
     public function createObject($object) {
         if(!is_object($object) || !method_exists($object, 'getId'))
             throw new \InvalidArgumentException('object must implement getId() method');
-        return $this->createTarget(static::$objectTargetClass, $object->getId(),
-            $this->createClass(get_class($object)));
+        
+        $class = get_class($object);
+        $id = $object->getId();
+        
+        if($this->findByObject($object, false))
+            throw new \Exception("Target for object {$class}:{$id} already exists");
+        
+        if(!$parent = $this->findByClass($class, false))
+            $parent = $this->createClass($class);
+        
+        return $this->createTarget(static::$objectTargetClass, $id, $parent);
     }
     /**
      * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::createField()
@@ -62,16 +74,42 @@ class TargetManager implements TargetManagerInterface {
         return $this->createTarget(static::$fieldTargetClass, $field, $parent);
     }
     /**
+     * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::createClassField()
+     */
+    public function createClassField($class, $field) {
+        if(!$parent = $this->findByClass($class, false))
+            $parent = $this->createClass($class);
+        
+        return $this->createTarget(static::$fieldTargetClass, $field, $parent);
+    }
+    /**
+     * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::createObjectField()
+     */
+    public function createObjectField($object, $field) {
+        if(!$parent = $this->findByObject($object, false))
+            $parent = $this->createObject($object);
+        
+        return $this->createTarget(static::$fieldTargetClass, $field, $parent);
+    }
+    /**
      * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::findByClass()
      */
     public function findByClass($class, $recursive=true) {
-
+        $repo = $this->em->getRepository(static::$classTargetClass);
+        if($target = $repo->findOneByName($class))
+            return $target;
+        return ($recursive && $parent = get_parent_class($class)) ? $this->findByClass($parent) : null;
     }
     /**
      * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::findByObject()
      */
     public function findByObject($object, $recursive=true) {
-        
+        if(!$parent = $this->findByClass(get_class($object), false))
+            return null;
+        $repo = $this->em->getRepository(static::$objectTargetClass);
+        if($target = $repo->findOneBy(['parent' => $parent->getId(), 'name' => $object->getId()]))
+            return $target;
+        return $recursive ? $parent : null;
     }
     /**
      * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::findByClassField()
@@ -84,5 +122,11 @@ class TargetManager implements TargetManagerInterface {
      */
     public function findByObjectField($object, $field, $recursive=true) {
         
+    }
+    /**
+     * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::save()
+     */
+    public function save() {
+        $this->em->flush();
     }
 }

@@ -20,11 +20,18 @@ interface TargetManagerInterface {
     public function createObject($object);
     /**
      * 
-     * @param Target $parent
+     * @param string $class
      * @param string $field
      * @return FieldTarget
      */
-    public function createField(Target $parent, $field);
+    public function createClassField($class, $field);
+    /**
+     *
+     * @param object $object
+     * @param string $field
+     * @return FieldTarget
+     */
+    public function createObjectField($object, $field);
     /**
      * @param string $class
      * @param boolean $recursive 
@@ -51,4 +58,8 @@ interface TargetManagerInterface {
      * @return Target|null
      */
     public function findByObjectField($object, $field, $recursive=true);
+    /**
+     * @return void
+     */
+    public function save();
 }
