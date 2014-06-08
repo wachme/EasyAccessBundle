@@ -1,6 +1,6 @@
 <?php
 
-namespace Test\Bundle\TestBundle\Entity;
+namespace Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 

@@ -8,6 +8,3 @@ if (!is_file($loaderFile = __DIR__.'/../vendor/autoload.php')) {
 
 $loader = require $loaderFile;
 AnnotationRegistry::registerLoader(array($loader, 'loadClass'));
-
-// Autoload for the test app
-require __DIR__ . '/Fixtures/App/vendor/autoload.php';

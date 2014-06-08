@@ -8,13 +8,13 @@ use Wachme\Bundle\EasyAccessBundle\Entity\Target;
 use Wachme\Bundle\EasyAccessBundle\Entity\ClassTarget;
 use Wachme\Bundle\EasyAccessBundle\Entity\ObjectTarget;
 use Wachme\Bundle\EasyAccessBundle\Entity\FieldTarget;
-use Test\Bundle\TestBundle\Entity\Post;
+use Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post;
 
 class TargetManagerTest extends DbTestCase {
     private $manager;
     
     private function getPost() {
-        return $this->em->getRepository('Test\\Bundle\\TestBundle\\Entity\\Post')->findAll()[0];
+        return $this->em->getRepository('Test:Post')->findAll()[0];
     }
     
     protected function setUp() {
@@ -23,7 +23,7 @@ class TargetManagerTest extends DbTestCase {
     }
 
     public function testCreateClass() {
-        $class = 'Test\\Bundle\\TestBundle\\Entity\Post';
+        $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
         $target = new ClassTarget();
         $target->setName($class);
         

@@ -10,7 +10,7 @@ class AppKernel extends Kernel
         $bundles = array(
             new Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
             new Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
-            new Test\Bundle\TestBundle\TestTestBundle(),
+            
             new Wachme\Bundle\EasyAccessBundle\EasyAccessBundle()
         );
 

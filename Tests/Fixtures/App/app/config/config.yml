@@ -17,4 +17,12 @@ doctrine:
 
     orm:
         auto_generate_proxy_classes: "%kernel.debug%"
-        auto_mapping: true
+        auto_mapping: false
+        mappings:
+            EasyAccessBundle:
+                is_bundle: true
+            Test:
+                is_bundle: false
+                type: annotation
+                dir: "%kernel.root_dir%/../.."
+                prefix: Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity
