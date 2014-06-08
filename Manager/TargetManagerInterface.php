@@ -41,7 +41,7 @@ interface TargetManagerInterface {
     /**
      * @param object $object
      * @param boolean $recursive 
-     * @return ObjectTarget|null
+     * @return Target|null
      */
     public function findByObject($object, $recursive=true);
     /**

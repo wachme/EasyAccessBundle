@@ -41,28 +41,52 @@ class TargetManagerTest extends DbTestCase {
         $this->manager->createObject($invalid);
     }
     
-    public function testCreateObject() {
+    public function testCreateObject() {        
         $this->loadData('post');
+        
         $parentTarget = $this->testCreateClass();
         $object = $this->getPost();
         $target = new ObjectTarget();
         $target->setName($object->getId());
         $target->setParent($parentTarget);
-        
+
         $created = $this->manager->createObject($object);
+        $this->assertEquals($target, $created);
+        $this->manager->save();
+        $this->assertNotNull($created->getId());
+
+        return $created;
+    }
+
+    public function testCreateClassField() {
+        $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
+        $field = 'title';
+        $parentTarget = $this->testCreateClass();
+        $target = new FieldTarget();
+        $target->setParent($parentTarget);
+        $target->setName($field);
+        
+        $created = $this->manager->createClassField($class, $field);
         $this->assertEquals($target, $created);
         $this->manager->save();
         $this->assertNotNull($created->getId());
         
         return $created;
     }
-
-    public function testCreateClassField() {
-
-    }
     
-
     public function testCreateObjectField() {
-
+        $field = 'title';
+        $parentTarget = $this->testCreateObject();
+        $object = $this->getPost();
+        $target = new FieldTarget();
+        $target->setParent($parentTarget);
+        $target->setName($field);
+        
+        $created = $this->manager->createObjectField($object, $field);
+        $this->assertEquals($target, $created);
+        $this->manager->save();
+        $this->assertNotNull($created->getId());
+        
+        return $created;
     }
 }

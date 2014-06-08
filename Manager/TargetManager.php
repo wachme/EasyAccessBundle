@@ -3,8 +3,8 @@
 namespace Wachme\Bundle\EasyAccessBundle\Manager;
 
 use Doctrine\ORM\EntityManager;
-use Wachme\Bundle\EasyAccessBundle\Entity;
 use Wachme\Bundle\EasyAccessBundle\Entity\Target;
+use Wachme\Bundle\EasyAccessBundle\Entity\FieldTarget;
 
 /**
  * Manages target entities in database
@@ -33,6 +33,19 @@ class TargetManager implements TargetManagerInterface {
         $this->em->persist($entity);
         return $entity;
     }
+    /**
+     * @param Target $parent
+     * @param string $field
+     * @param boolean $recursive
+     * @return FieldTarget
+     */
+    private function findByField($parent, $field, $recursive=true) {
+        $repo = $this->em->getRepository(static::$fieldTargetClass);
+        if($target = $repo->findOneBy(['parent' => $parent->getId(), 'name' => $field]))
+            return $target;
+        
+        return $recursive ? $parent : null;
+    }
     
     /**
      * @param EntityManager $em
@@ -45,7 +58,7 @@ class TargetManager implements TargetManagerInterface {
      */
     public function createClass($class) {
         if($this->findByClass($class, false))
-            throw new \Exception("Target for class {$class} already exists");
+            throw new TargetExistsException();
         
         return $this->createTarget(static::$classTargetClass, $class);
     }
@@ -56,11 +69,11 @@ class TargetManager implements TargetManagerInterface {
         if(!is_object($object) || !method_exists($object, 'getId'))
             throw new \InvalidArgumentException('object must implement getId() method');
         
+        if($this->findByObject($object, false))
+            throw new TargetExistsException();
+        
         $class = get_class($object);
         $id = $object->getId();
-        
-        if($this->findByObject($object, false))
-            throw new \Exception("Target for object {$class}:{$id} already exists");
         
         if(!$parent = $this->findByClass($class, false))
             $parent = $this->createClass($class);
@@ -68,15 +81,12 @@ class TargetManager implements TargetManagerInterface {
         return $this->createTarget(static::$objectTargetClass, $id, $parent);
     }
     /**
-     * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::createField()
-     */
-    public function createField(Target $parent, $field) {
-        return $this->createTarget(static::$fieldTargetClass, $field, $parent);
-    }
-    /**
      * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::createClassField()
      */
     public function createClassField($class, $field) {
+        if($this->findByClassField($class, $field, false))
+            throw new TargetExistsException();
+        
         if(!$parent = $this->findByClass($class, false))
             $parent = $this->createClass($class);
         
@@ -86,6 +96,9 @@ class TargetManager implements TargetManagerInterface {
      * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::createObjectField()
      */
     public function createObjectField($object, $field) {
+        if($this->findByObjectField($object, $field, false))
+            throw new TargetExistsException();
+        
         if(!$parent = $this->findByObject($object, false))
             $parent = $this->createObject($object);
         
@@ -98,6 +111,7 @@ class TargetManager implements TargetManagerInterface {
         $repo = $this->em->getRepository(static::$classTargetClass);
         if($target = $repo->findOneByName($class))
             return $target;
+        
         return ($recursive && $parent = get_parent_class($class)) ? $this->findByClass($parent) : null;
     }
     /**
@@ -105,23 +119,31 @@ class TargetManager implements TargetManagerInterface {
      */
     public function findByObject($object, $recursive=true) {
         if(!$parent = $this->findByClass(get_class($object), false))
-            return null;
+            return $recursive ? $this->findByClass(get_class($object)) : null;
+        
         $repo = $this->em->getRepository(static::$objectTargetClass);
         if($target = $repo->findOneBy(['parent' => $parent->getId(), 'name' => $object->getId()]))
             return $target;
+        
         return $recursive ? $parent : null;
     }
     /**
      * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::findByClassField()
      */
     public function findByClassField($class, $field, $recursive=true) {
+        if(!$parent = $this->findByClass($class, $recursive))
+            return null;
         
+        return $this->findByField($parent, $field, $recursive);
     }
     /**
      * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::findByObjectField()
      */
     public function findByObjectField($object, $field, $recursive=true) {
+        if(!$parent = $this->findByObject($object, $recursive))
+            return null;
         
+        return $this->findByField($parent, $field, $recursive);
     }
     /**
      * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::save()
