@@ -1,5 +1,6 @@
 {
     "name": "wachme/easy-access-bundle",
+    "version": "0.0.1",
     "license": "MIT",
     "type": "symfony-bundle",
     "description": "EasyAccessBundle",
