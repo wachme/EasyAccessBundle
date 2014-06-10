@@ -22,8 +22,9 @@ class TargetManagerTest extends DbTestCase {
         $this->manager = new TargetManager($this->em);
     }
 
-    public function testCreateClass() {
-        $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
+    public function testCreateClass($class=null) {
+        if(!$class)
+            $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
         $target = new ClassTarget();
         $target->setName($class);
         
@@ -88,5 +89,49 @@ class TargetManagerTest extends DbTestCase {
         $this->assertNotNull($created->getId());
         
         return $created;
+    }
+    
+    public function testFindByClass() {
+        $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\SpecialPost';
+        $parentClass = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
+        
+        $this->assertNull($this->manager->findByClass($class));
+        
+        $parentTarget = $this->manager->createClass($parentClass);
+        $this->manager->save();
+        $this->assertEquals($parentTarget, $this->manager->findByClass($class));
+        $this->assertNull($this->manager->findByClass($class, false));
+    }
+    
+    public function testFindByObject() {
+        $this->loadData('post');
+        $this->loadData('special_post');
+        
+        $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\SpecialPost';
+        $parentClass = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
+        $object = $this->em->getRepository('Test:SpecialPost')->findAll()[0];
+        $this->assertNull($this->manager->findByObject($object));
+        
+        $parentClassTarget = $this->manager->createClass($parentClass) ;
+        $this->manager->save();
+        $this->assertEquals($parentClassTarget, $this->manager->findByObject($object));
+        $this->assertNull($this->manager->findByObject($object, false));
+        
+        // Object of a class does not inherit target from parent class object:
+        $parentClassObject = $this->getPost();
+        $this->manager->createObject($parentClassObject);
+        $this->manager->save();
+        $this->assertEquals($parentClassTarget, $this->manager->findByObject($object));
+        $this->assertNull($this->manager->findByObject($object, false));
+
+        $classTarget = $this->manager->createClass($class);
+        $this->manager->save();
+        $this->assertEquals($classTarget, $this->manager->findByObject($object));
+        $this->assertNull($this->manager->findByObject($object, false));
+        
+        $target = $this->manager->createObject($object);
+        $this->manager->save();
+        $this->assertEquals($target, $this->manager->findByObject($object));
+        $this->assertEquals($target, $this->manager->findByObject($object, false));
     }
 }

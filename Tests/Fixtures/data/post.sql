@@ -1,1 +1,1 @@
-INSERT INTO `Post` (`title`, `content`) VALUES ('My first post', 'Blah blah');
+INSERT INTO `Post` (`title`, `content`, `discr`) VALUES ('My first post', 'Blah blah', 'post');

@@ -5,8 +5,10 @@ namespace Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table()
- * @ORM\Entity
+ * @ORM\Entity()
+ * @ORM\InheritanceType("SINGLE_TABLE")
+ * @ORM\DiscriminatorColumn(name="discr", type="string")
+ * @ORM\DiscriminatorMap({"post" = "Post", "specialPost" = "SpecialPost"})
  */
 class Post
 {
