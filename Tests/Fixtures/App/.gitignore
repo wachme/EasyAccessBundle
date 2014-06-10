@@ -1,2 +1,3 @@
 app/cache
-
+var/cache
+var/logs

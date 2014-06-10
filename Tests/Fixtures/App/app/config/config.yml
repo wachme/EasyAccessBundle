@@ -12,17 +12,43 @@ framework:
 # Doctrine Configuration
 doctrine:
     dbal:
-        driver:   pdo_sqlite
-        memory:   true
+        default_connection: sqlite
+        connections:
+            sqlite:
+                driver:   pdo_sqlite
+                memory:   true
+            mysql:
+                driver:   pdo_mysql
+                host:     localhost
+                port:     ~
+                dbname:   easy_access_test
+                user:     root
+                password: root
+                charset:  UTF8
 
     orm:
         auto_generate_proxy_classes: "%kernel.debug%"
-        auto_mapping: false
-        mappings:
-            EasyAccessBundle:
-                is_bundle: true
-            Test:
-                is_bundle: false
-                type: annotation
-                dir: "%kernel.root_dir%/../.."
-                prefix: Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity
+        default_entity_manager: sqlite
+        entity_managers:
+            sqlite:
+                connection: sqlite
+                auto_mapping: false
+                mappings:
+                    EasyAccessBundle:
+                        is_bundle: true
+                    Test:
+                        is_bundle: false
+                        type: annotation
+                        dir: "%kernel.root_dir%/../.."
+                        prefix: Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity
+            mysql:
+                connection: mysql
+                auto_mapping: false
+                mappings:
+                    EasyAccessBundle:
+                        is_bundle: true
+                    Test:
+                        is_bundle: false
+                        type: annotation
+                        dir: "%kernel.root_dir%/../.."
+                        prefix: Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity
