@@ -2,6 +2,7 @@
 
 namespace Wachme\Bundle\EasyAccessBundle\Manager;
 
+use Wachme\Bundle\EasyAccessBundle\Model\TargetManagerInterface;
 use Doctrine\ORM\EntityManager;
 use Wachme\Bundle\EasyAccessBundle\Entity\Target;
 use Wachme\Bundle\EasyAccessBundle\Entity\FieldTarget;
@@ -24,7 +25,7 @@ class TargetManager implements TargetManagerInterface {
     /**
      * @param string $class
      * @param string $name
-     * @return Target
+     * @return TargetInterface
      */
     private function createTarget($class, $name, $parent=null) {
         $entity = new $class();
@@ -37,7 +38,7 @@ class TargetManager implements TargetManagerInterface {
      * @param Target $parent
      * @param string $field
      * @param boolean $recursive
-     * @return FieldTarget
+     * @return TargetInterface
      */
     private function findByField($parent, $field, $recursive=true) {
         $repo = $this->em->getRepository(static::$fieldTargetClass);

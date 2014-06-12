@@ -2,6 +2,7 @@
 
 namespace Wachme\Bundle\EasyAccessBundle\Entity;
 
+use Wachme\Bundle\EasyAccessBundle\Model\TargetInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -12,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\DiscriminatorColumn(name="discr", type="string")
  * @ORM\DiscriminatorMap({"class" = "ClassTarget", "object" = "ObjectTarget", "field" = "FieldTarget"})
  */
-class Target {
+class Target implements TargetInterface {
     /**
      * @var integer
      *
