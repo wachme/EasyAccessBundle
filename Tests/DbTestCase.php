@@ -12,9 +12,9 @@ class DbTestCase extends KernelTestCase {
      */
     protected $em;
     
-    protected function setUp() {
+    protected function setUp($conn=null) {
         static::bootKernel();
-        $this->em = static::$kernel->getContainer()->get('doctrine')->getManager();
+        $this->em = static::$kernel->getContainer()->get('doctrine')->getManager($conn);
         $this->refresh();
     }
     

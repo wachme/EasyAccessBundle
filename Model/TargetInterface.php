@@ -8,17 +8,9 @@ interface TargetInterface {
      */
     public function getId();
     /**
-     * @param string $name
-     */
-    public function setName($name);
-    /**
      * @return string
      */
     public function getName();
-    /**
-     * @param TargetInterface|null $parent
-     */
-    public function setParent(TargetInterface $parent=null);
     /**
      * @return TargetInterface|null
      */

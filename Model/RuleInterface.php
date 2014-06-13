@@ -11,18 +11,9 @@ interface RuleInterface {
      */
     public function getId();
     /**
-     * 
-     * @param TargetInterface $target
-     */
-    public function setTarget(TargetInterface $target);
-    /**
      * @return TargetInterface
      */
     public function getTarget();
-    /**
-     * @param SubjectInterface $subject
-     */
-    public function setSubject(SubjectInterface $subject);
     /**
      * @return SubjectInterface
      */

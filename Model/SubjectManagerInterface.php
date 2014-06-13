@@ -15,8 +15,4 @@ interface SubjectManagerInterface {
      * @return SubjectInterface
      */
     public function findByUser($user);
-    /**
-     * @return void
-     */
-    public function save();
 }

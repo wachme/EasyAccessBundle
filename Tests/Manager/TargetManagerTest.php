@@ -30,7 +30,7 @@ class TargetManagerTest extends DbTestCase {
         
         $created = $this->manager->createClass($class);
         $this->assertEquals($target, $created);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertNotNull($created->getId());
         
         return $created;
@@ -53,7 +53,7 @@ class TargetManagerTest extends DbTestCase {
 
         $created = $this->manager->createObject($object);
         $this->assertEquals($target, $created);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertNotNull($created->getId());
 
         return $created;
@@ -69,7 +69,7 @@ class TargetManagerTest extends DbTestCase {
         
         $created = $this->manager->createClassField($class, $field);
         $this->assertEquals($target, $created);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertNotNull($created->getId());
         
         return $created;
@@ -85,7 +85,7 @@ class TargetManagerTest extends DbTestCase {
         
         $created = $this->manager->createObjectField($object, $field);
         $this->assertEquals($target, $created);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertNotNull($created->getId());
         
         return $created;
@@ -98,12 +98,12 @@ class TargetManagerTest extends DbTestCase {
         $this->assertNull($this->manager->findByClass($class));
         
         $parentTarget = $this->manager->createClass($parentClass);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($parentTarget, $this->manager->findByClass($class));
         $this->assertNull($this->manager->findByClass($class, false));
         
         $target = $this->manager->createClass($class);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($target, $this->manager->findByClass($class));
         $this->assertEquals($target, $this->manager->findByClass($class, false));
     }
@@ -118,24 +118,24 @@ class TargetManagerTest extends DbTestCase {
         $this->assertNull($this->manager->findByObject($object));
         
         $parentClassTarget = $this->manager->createClass($parentClass) ;
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($parentClassTarget, $this->manager->findByObject($object));
         $this->assertNull($this->manager->findByObject($object, false));
         
         // Object of a class does not inherit target from parent class object:
         $parentClassObject = $this->getPost();
         $this->manager->createObject($parentClassObject);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($parentClassTarget, $this->manager->findByObject($object));
         $this->assertNull($this->manager->findByObject($object, false));
 
         $classTarget = $this->manager->createClass($class);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($classTarget, $this->manager->findByObject($object));
         $this->assertNull($this->manager->findByObject($object, false));
         
         $target = $this->manager->createObject($object);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($target, $this->manager->findByObject($object));
         $this->assertEquals($target, $this->manager->findByObject($object, false));
     }
@@ -147,22 +147,22 @@ class TargetManagerTest extends DbTestCase {
         $this->assertNull($this->manager->findByClassField($class, $field));
         
         $parentClassTarget = $this->manager->createClass($parentClass);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($parentClassTarget, $this->manager->findByClassField($class, $field));
         $this->assertNull($this->manager->findByClassField($class, $field, false));
         
         $parentClassFieldTarget = $this->manager->createClassField($parentClass, $field);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($parentClassFieldTarget, $this->manager->findByClassField($class, $field));
         $this->assertNull($this->manager->findByClassField($class, $field, false));
         
         $classTarget = $this->manager->createClass($class);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($classTarget, $this->manager->findByClassField($class, $field));
         $this->assertNull($this->manager->findByClassField($class, $field, false));
         
         $target = $this->manager->createClassField($class, $field);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($target, $this->manager->findByClassField($class, $field));
         $this->assertEquals($target, $this->manager->findByClassField($class, $field, false));
     }
@@ -178,32 +178,32 @@ class TargetManagerTest extends DbTestCase {
         $this->assertNull($this->manager->findByObjectField($object, $field));
         
         $parentClassTarget = $this->manager->createClass($parentClass);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($parentClassTarget, $this->manager->findByObjectField($object, $field));
         $this->assertNull($this->manager->findByObjectField($object, $field, false));
         
         $parentClassFieldTarget = $this->manager->createClassField($parentClass, $field);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($parentClassFieldTarget, $this->manager->findByObjectField($object, $field));
         $this->assertNull($this->manager->findByObjectField($object, $field, false));
         
         $classTarget = $this->manager->createClass($class);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($classTarget, $this->manager->findByObjectField($object, $field));
         $this->assertNull($this->manager->findByObjectField($object, $field, false));
         
         $classFieldTarget = $this->manager->createClassField($class, $field);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($classFieldTarget, $this->manager->findByObjectField($object, $field));
         $this->assertNull($this->manager->findByObjectField($object, $field, false));
         
         $objectTarget = $this->manager->createObject($object);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($objectTarget, $this->manager->findByObjectField($object, $field));
         $this->assertNull($this->manager->findByObjectField($object, $field, false));
         
         $target = $this->manager->createObjectField($object, $field);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($target, $this->manager->findByObjectField($object, $field));
         $this->assertEquals($target, $this->manager->findByObjectField($object, $field, false));
     }

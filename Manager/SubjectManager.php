@@ -39,10 +39,4 @@ class SubjectManager implements SubjectManagerInterface {
         $repo = $this->em->getRepository('EasyAccessBundle:Subject');
         return $repo->findOneBy(['type' => get_class($user), 'identifier' => $user->getId()]);
     }
-    /**
-     * @see \Wachme\Bundle\EasyAccessBundle\Model\SubjectManagerInterface::save()
-     */
-    public function save() {
-        $this->em->flush();
-    }
 }

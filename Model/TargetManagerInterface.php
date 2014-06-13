@@ -55,8 +55,4 @@ interface TargetManagerInterface {
      * @return TargetInterface|null
      */
     public function findByObjectField($object, $field, $recursive=true);
-    /**
-     * @return void
-     */
-    public function save();
 }

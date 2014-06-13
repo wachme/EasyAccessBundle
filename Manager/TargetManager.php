@@ -146,10 +146,4 @@ class TargetManager implements TargetManagerInterface {
         
         return $this->findByField($parent, $field, $recursive);
     }
-    /**
-     * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::save()
-     */
-    public function save() {
-        $this->em->flush();
-    }
 }

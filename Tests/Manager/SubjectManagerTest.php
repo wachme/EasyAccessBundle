@@ -24,7 +24,7 @@ class SubjectManagerTest extends DbTestCase {
         
         $created = $this->manager->createUser($user);
         $this->assertEquals($subject, $created);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertNotNull($created->getId());
     }
     
@@ -35,7 +35,7 @@ class SubjectManagerTest extends DbTestCase {
         $this->assertNull($this->manager->findByUser($user));
         
         $subject = $this->manager->createUser($user);
-        $this->manager->save();
+        $this->em->flush();
         $this->assertEquals($subject, $this->manager->findByUser($user));
     }
 }
