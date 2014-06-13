@@ -4,6 +4,10 @@ namespace Wachme\Bundle\EasyAccessBundle\Model;
 
 interface SubjectInterface {
     /**
+     * @return integer
+     */
+    public function getId();
+    /**
      * @param string $type
      */
     public function setType($type);

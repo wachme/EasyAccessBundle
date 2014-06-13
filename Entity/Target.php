@@ -70,13 +70,13 @@ class Target implements TargetInterface {
     }
     
     /**
-     * @param Target $parent
+     * @param TargetInterface|null $parent
      */
-    public function setParent($parent) {
+    public function setParent(TargetInterface $parent=null) {
         $this->parent = $parent;
     }
     /**
-     * @return Target
+     * @return TargetInterface|null
      */
     public function getParent() {
         return $this->parent;

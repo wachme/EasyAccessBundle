@@ -23,6 +23,9 @@ class SubjectManager implements SubjectManagerInterface {
      * @see \Wachme\Bundle\EasyAccessBundle\Model\SubjectManagerInterface::createUser()
      */
     public function createUser($user) {
+        if($this->findByUser($user))
+            throw new SubjectExistsException();
+        
         $subject = new Subject();
         $subject->setType(get_class($user));
         $subject->setIdentifier($user->getId());

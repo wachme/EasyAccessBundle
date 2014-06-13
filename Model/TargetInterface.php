@@ -4,6 +4,10 @@ namespace Wachme\Bundle\EasyAccessBundle\Model;
 
 interface TargetInterface {
     /**
+     * @return integer
+     */
+    public function getId();
+    /**
      * @param string $name
      */
     public function setName($name);
@@ -12,11 +16,11 @@ interface TargetInterface {
      */
     public function getName();
     /**
-     * @param TargetInterface $parent
+     * @param TargetInterface|null $parent
      */
-    public function setParent($parent);
+    public function setParent(TargetInterface $parent=null);
     /**
-     * @return TargetInterface
+     * @return TargetInterface|null
      */
     public function getParent();
 }
