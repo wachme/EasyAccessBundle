@@ -11,9 +11,9 @@ class AttributeMap {
 	   'delete' =>   0b00001000,
 	   'undelete' => 0b00010000,
 	   
-	   'operator' => 0b00011111,
-	   'master' =>   0b00111111,
-	   'owner' =>    0b01111111
+	   'operator' => 0b00111111,
+	   'master' =>   0b01111111,
+	   'owner' =>    0b11111111
     ];
     
     /**
@@ -29,5 +29,17 @@ class AttributeMap {
             $mask |= $this->attributes[$attr];
         }
         return $mask;
+    }
+    /**
+     * @param integer $mask
+     * @return array
+     */
+    public function getAttributes($mask) {
+        $attrs = [];
+        foreach($this->attributes as $attr => $m) {
+            if(($mask & $m) == $m)
+                $attrs[] = $attr;
+        }
+        return $attrs;
     }
 }
