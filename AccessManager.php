@@ -8,6 +8,7 @@ use Wachme\Bundle\EasyAccessBundle\Manager\TargetExistsException;
 use Wachme\Bundle\EasyAccessBundle\Manager\SubjectExistsException;
 use Wachme\Bundle\EasyAccessBundle\Model\TargetInterface;
 use Wachme\Bundle\EasyAccessBundle\Model\SubjectInterface;
+use Wachme\Bundle\EasyAccessBundle\Attribute\AttributeMap;
 
 class AccessManager {
     /**
@@ -22,6 +23,10 @@ class AccessManager {
      * @var RuleManagerInterface
      */
     private $ruleManager;
+    /**
+     * @var AttributeMap
+     */
+    private $attributeMap;
     
     /**
      * @param string|array|object $element
@@ -88,24 +93,30 @@ class AccessManager {
             return $this->subjectManager->findByUser($user);
         }
     }
-    
+
     /**
      * @param TargetManagerInterface $targetManager
      * @param SubjectManagerInterface $subjectManager
      * @param RuleManagerInterface $ruleManager
+     * @param AttributeMap $attributeMap
      */
-    public function __construct(TargetManagerInterface $targetManager, SubjectManagerInterface $subjectManager, RuleManagerInterface $ruleManager) {
+    public function __construct(TargetManagerInterface $targetManager, SubjectManagerInterface $subjectManager, RuleManagerInterface $ruleManager, AttributeMap $attributeMap) {
         $this->targetManager = $targetManager;
         $this->subjectManager = $subjectManager;
         $this->ruleManager = $ruleManager;
+        $this->attributeMap = $attributeMap;
     }
     /**
      * @param string|array|object $element
      * @param object $user
-     * @param array $attributes
+     * @param string|array $attributes
      */
     public function grant($element, $user, $attributes) {
+        if(!is_array($attributes))
+            $attributes = [$attributes];
+        
         $target = $this->getTarget($element);
         $subject = $this->getSubject($user);
+        $mask = $this->attributeMap->getMask($attributes);
     }
 }
