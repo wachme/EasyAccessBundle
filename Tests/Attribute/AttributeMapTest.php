@@ -1,6 +1,7 @@
 <?php
 
 namespace Wachme\Bundle\EasyAccessBundle\Tests\Attribute;
+
 use Wachme\Bundle\EasyAccessBundle\Attribute\AttributeMap;
 
 class AttributeMapTest extends \PHPUnit_Framework_TestCase {
@@ -24,6 +25,7 @@ class AttributeMapTest extends \PHPUnit_Framework_TestCase {
         return [
             [0, []],
 	        [0b00000001, ['view']],
+	        [0b00000010, ['CrEATe']],
 	        [0b00000011, ['view', 'create']],
 	        [0b00011111, ['edit', 'operator']]
         ];

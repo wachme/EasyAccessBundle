@@ -23,6 +23,7 @@ class AttributeMap {
     public function getMask(array $attributes) {
         $mask = 0;
         foreach($attributes as $attr) {
+            $attr = strtolower($attr);
             if(!isset($this->attributes[$attr]))
                 throw new UnknownAttributeException($attr);
             $mask |= $this->attributes[$attr];
