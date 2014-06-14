@@ -1,7 +1,28 @@
 parameters:
     easy_access.target_manager.class: Wachme\Bundle\EasyAccessBundle\Manager\TargetManager
+    easy_access.subject_manager.class: Wachme\Bundle\EasyAccessBundle\Manager\SubjectManager
+    easy_access.rule_manager.class: Wachme\Bundle\EasyAccessBundle\Manager\RuleManager
+    easy_access.attribute_map.class: Wachme\Bundle\EasyAccessBundle\Attribute\AttributeMap
+    easy_access.access_manager.class: Wachme\Bundle\EasyAccessBundle\AccessManager
 
 services:
     easy_access.target_manager:
         class: %easy_access.target_manager.class%
         arguments: [@doctrine.orm.entity_manager]
+    easy_access.subject_manager:
+        class: %easy_access.subject_manager.class%
+        arguments: [@doctrine.orm.entity_manager]
+    easy_access.rule_manager:
+        class: %easy_access.rule_manager.class%
+        arguments: [@doctrine.orm.entity_manager]
+    easy_access.attribute_map:
+        class: %easy_access.attribute_map.class%
+    easy_access.access_manager:
+        class: %easy_access.access_manager.class%
+        arguments:
+            - @doctrine.orm.entity_manager
+            - @easy_access.target_manager
+            - @easy_access.subject_manager
+            - @easy_access.rule_manager
+            - @easy_access.attribute_map
+    easy_access: @easy_access.access_manager

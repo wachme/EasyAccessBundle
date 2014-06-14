@@ -107,8 +107,8 @@ class AccessManager {
      * @param boolean $create
      * @return RuleInterface|null
      */
-    private function getRule(TargetInterface $target, SubjectInterface $subject, $create=false) {
-        if($rule = $this->ruleManager->find($target, $subject))
+    private function getRule(TargetInterface $target, SubjectInterface $subject, $recursive=true, $create=false) {
+        if($rule = $this->ruleManager->find($target, $subject, $recursive))
             return $rule;
         if($create)
             return $this->ruleManager->create($target, $subject);
@@ -138,11 +138,31 @@ class AccessManager {
         
         $target = $this->getTarget($element, false, true);
         $subject = $this->getSubject($user, true);
-        $rule = $this->getRule($target, $subject, true);
+        $rule = $this->getRule($target, $subject, false, true);
         
         $mask = $this->attributeMap->getMask($attributes);
         $rule->setMask($mask);
         
         $this->em->flush();
+    }
+    /**
+     * @param string|array|object $element
+     * @param object $user
+     * @param string|array $attributes
+     * @return boolean
+     */
+    public function isAllowed($element, $user, $attributes) {
+        if(!is_array($attributes))
+            $attributes = [$attributes];
+        
+        $target = $this->getTarget($element);
+        $subject = $this->getSubject($user);
+        if(!$target || !$subject)
+            return false;
+        
+        $mask = $this->attributeMap->getMask($attributes);
+        $rule = $this->getRule($target, $subject);
+        
+        return $rule && ($mask & $rule->getMask()) == $mask;        
     }
 }

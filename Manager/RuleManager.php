@@ -25,7 +25,7 @@ class RuleManager implements RuleManagerInterface {
      * @see \Wachme\Bundle\EasyAccessBundle\Model\RuleManagerInterface::create()
      */
     public function create(TargetInterface $target, SubjectInterface $subject, $mask=0, RuleInterface $parent=null) {
-        if($this->find($target, $subject))
+        if($this->find($target, $subject, false))
             throw new RuleExistsException();
         
         $rule = new Rule();
@@ -39,9 +39,12 @@ class RuleManager implements RuleManagerInterface {
     /**
      * @see \Wachme\Bundle\EasyAccessBundle\Model\RuleManagerInterface::find()
      */
-    public function find(TargetInterface $target, SubjectInterface $subject) {
+    public function find(TargetInterface $target, SubjectInterface $subject, $recursive=true) {
         $repo = $this->em->getRepository('EasyAccessBundle:Rule');
-        return $repo->findOneBy(['target' => $target->getId(), 'subject' => $subject->getId()]);
+        if($rule = $repo->findOneBy(['target' => $target->getId(), 'subject' => $subject->getId()]))
+            return $rule;
+        
+        return ($recursive && $parentTarget = $target->getParent()) ? $this->find($parentTarget, $subject) : null;
     }
     /**
      * @see \Wachme\Bundle\EasyAccessBundle\Model\RuleManagerInterface::findByTarget()
