@@ -26,12 +26,4 @@ interface RuleInterface {
      * @return integer
      */
     public function getMask();
-    /**
-     * @param RuleInterface|null $parent
-     */
-    public function setParent(RuleInterface $parent=null);
-    /**
-     * @return RuleInterface|null
-     */
-    public function getParent();
 }

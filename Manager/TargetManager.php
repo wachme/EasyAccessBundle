@@ -4,49 +4,19 @@ namespace Wachme\Bundle\EasyAccessBundle\Manager;
 
 use Wachme\Bundle\EasyAccessBundle\Model\TargetManagerInterface;
 use Doctrine\ORM\EntityManager;
-use Wachme\Bundle\EasyAccessBundle\Entity\Target;
-use Wachme\Bundle\EasyAccessBundle\Entity\FieldTarget;
+use Wachme\Bundle\EasyAccessBundle\Entity\ClassTarget;
+use Wachme\Bundle\EasyAccessBundle\Entity\ObjectTarget;
+use Wachme\Bundle\EasyAccessBundle\Entity\ClassFieldTarget;
+use Wachme\Bundle\EasyAccessBundle\Entity\ObjectFieldTarget;
 
 /**
  * Manages target entities in database
  */
-class TargetManager implements TargetManagerInterface {    
-    
-    private static $targetClass = 'Wachme\Bundle\EasyAccessBundle\Entity\Target';
-    private static $classTargetClass = 'Wachme\Bundle\EasyAccessBundle\Entity\ClassTarget';
-    private static $objectTargetClass = 'Wachme\Bundle\EasyAccessBundle\Entity\ObjectTarget';
-    private static $fieldTargetClass = 'Wachme\Bundle\EasyAccessBundle\Entity\FieldTarget';
-    
+class TargetManager implements TargetManagerInterface {
     /** 
      * @var EntityManager
      */
     private $em;
-    
-    /**
-     * @param string $class
-     * @param string $name
-     * @return TargetInterface
-     */
-    private function createTarget($class, $name, $parent=null) {
-        $entity = new $class();
-        $entity->setName($name);
-        $entity->setParent($parent);
-        $this->em->persist($entity);
-        return $entity;
-    }
-    /**
-     * @param Target $parent
-     * @param string $field
-     * @param boolean $recursive
-     * @return TargetInterface
-     */
-    private function findByField($parent, $field, $recursive=true) {
-        $repo = $this->em->getRepository(static::$fieldTargetClass);
-        if($target = $repo->findOneBy(['parent' => $parent->getId(), 'name' => $field]))
-            return $target;
-        
-        return $recursive ? $parent : null;
-    }
     
     /**
      * @param EntityManager $em
@@ -55,95 +25,132 @@ class TargetManager implements TargetManagerInterface {
         $this->em = $em;
     }
     /**
-     * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::createClass()
+     * {@inheritdoc}
      */
     public function createClass($class) {
-        if($this->findByClass($class, false))
-            throw new TargetExistsException();
-        
-        return $this->createTarget(static::$classTargetClass, $class);
+        $target = new ClassTarget();
+        $target->setName($class);
+        $this->em->persist($target);
+        return $target;
     }
     /**
-     * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::createObject()
+     * {@inheritdoc}
      */
     public function createObject($object) {
-        if(!is_object($object) || !method_exists($object, 'getId'))
-            throw new \InvalidArgumentException('object must implement getId() method');
-        
-        if($this->findByObject($object, false))
-            throw new TargetExistsException();
-        
         $class = get_class($object);
         $id = $object->getId();
-        
-        if(!$parent = $this->findByClass($class, false))
-            $parent = $this->createClass($class);
-        
-        return $this->createTarget(static::$objectTargetClass, $id, $parent);
+        $classTarget = $this->findOrCreateClass($class);
+    
+        $target = new ObjectTarget();
+        $target->setClass($classTarget);
+        $target->setIdentifier($id);
+        $this->em->persist($target);
+        return $target;
     }
     /**
-     * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::createClassField()
+     * {@inheritdoc}
      */
     public function createClassField($class, $field) {
-        if($this->findByClassField($class, $field, false))
-            throw new TargetExistsException();
-        
-        if(!$parent = $this->findByClass($class, false))
-            $parent = $this->createClass($class);
-        
-        return $this->createTarget(static::$fieldTargetClass, $field, $parent);
+        $classTarget = $this->findOrCreateClass($class);
+    
+        $target = new ClassFieldTarget();
+        $target->setClass($classTarget);
+        $target->setName($field);
+        $this->em->persist($target);
+        return $target;
     }
     /**
-     * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::createObjectField()
+     * {@inheritdoc}
      */
     public function createObjectField($object, $field) {
-        if($this->findByObjectField($object, $field, false))
-            throw new TargetExistsException();
-        
-        if(!$parent = $this->findByObject($object, false))
-            $parent = $this->createObject($object);
-        
-        return $this->createTarget(static::$fieldTargetClass, $field, $parent);
+        $objectTarget = $this->findOrCreateObject($object);
+    
+        $target = new ObjectFieldTarget();
+        $target->setObject($objectTarget);
+        $target->setName($field);
+        $this->em->persist($target);
+        return $target;
     }
     /**
-     * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::findByClass()
+     * {@inheritdoc}
      */
-    public function findByClass($class, $recursive=true) {
-        $repo = $this->em->getRepository(static::$classTargetClass);
-        if($target = $repo->findOneByName($class))
-            return $target;
-        
-        return ($recursive && $parent = get_parent_class($class)) ? $this->findByClass($parent) : null;
+    public function findClass($class) {
+        $repo = $this->em->getRepository('EasyAccessBundle:ClassTarget');
+        return $repo->findOneByName($class);
     }
     /**
-     * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::findByObject()
+     * {@inheritdoc}
      */
-    public function findByObject($object, $recursive=true) {
-        if(!$parent = $this->findByClass(get_class($object), false))
-            return $recursive ? $this->findByClass(get_class($object)) : null;
-        
-        $repo = $this->em->getRepository(static::$objectTargetClass);
-        if($target = $repo->findOneBy(['parent' => $parent->getId(), 'name' => $object->getId()]))
-            return $target;
-        
-        return $recursive ? $parent : null;
+    public function findObject($object) {
+        return $this->em->createQueryBuilder()
+        ->select('t')
+        ->from('EasyAccessBundle:ObjectTarget', 't')
+        ->join('t.class', 'c')
+        ->where('t.identifier = :identifier')
+        ->andWhere('c.name = :class')
+        ->setParameters([
+            'identifier' => $object->getId(),
+            'class' => get_class($object)
+            ])
+            ->getQuery()->getOneOrNullResult();
     }
     /**
-     * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::findByClassField()
+     * {@inheritdoc}
      */
-    public function findByClassField($class, $field, $recursive=true) {
-        if(!$parent = $this->findByClass($class, $recursive))
-            return null;
-        
-        return $this->findByField($parent, $field, $recursive);
+    public function findClassField($class, $field) {
+        return $this->em->createQueryBuilder()
+        ->select('t')
+        ->from('EasyAccessBundle:ClassFieldTarget', 't')
+        ->join('t.class', 'c')
+        ->where('t.name = :name')
+        ->andWhere('c.name = :class')
+        ->setParameters([
+            'name' => $field,
+            'class' => $class
+            ])
+            ->getQuery()->getOneOrNullResult();
     }
     /**
-     * @see \Wachme\Bundle\EasyAccessBundle\Manager\TargetManagerInterface::findByObjectField()
+     * {@inheritdoc}
      */
-    public function findByObjectField($object, $field, $recursive=true) {
-        if(!$parent = $this->findByObject($object, $recursive))
-            return null;
-        
-        return $this->findByField($parent, $field, $recursive);
+    public function findObjectField($object, $field) {
+        return $this->em->createQueryBuilder()
+        ->select('t')
+        ->from('EasyAccessBundle:ObjectFieldTarget', 't')
+        ->join('t.object', 'o')
+        ->join('o.class', 'c')
+        ->where('t.name = :name')
+        ->andWhere('o.identifier = :identifier')
+        ->andWhere('c.name = :class')
+        ->setParameters([
+            'name' => $field,
+            'identifier' => $object->getId(),
+            'class' => get_class($object)
+            ])
+            ->getQuery()->getOneOrNullResult();
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function findOrCreateClass($class) {
+        return $this->findClass($class) ?: $this->createClass($class);
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function findOrCreateObject($object) {
+        return $this->findObject($object) ?: $this->createObject($object);
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function findOrCreateClassField($class, $field) {
+        return $this->findClassField($class, $field) ?: $this->createClassField($class, $field);
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function findOrCreateObjectField($object, $field) {
+        return $this->findObjectField($object, $field) ?: $this->createObjectField($object, $field);
     }
 }

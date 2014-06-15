@@ -46,13 +46,6 @@ class Rule implements RuleInterface
      * @ORM\Column(type="integer")
      */
     private $mask;
-    
-    /**
-     * @var Rule
-     * 
-     * @ORM\ManyToOne(targetEntity="Rule")
-     */
-    private $parent;
 
     /**
      * Get id
@@ -101,18 +94,5 @@ class Rule implements RuleInterface
      */
     public function getMask() {
         return $this->mask;
-    }
-    
-    /**
-     * @param RuleInterface|null $parent
-     */
-    public function setParent(RuleInterface $parent=null) {
-        $this->parent = $parent;
-    }
-    /**
-     * @return RuleInterface|null
-     */
-    public function getParent() {
-        return $this->parent;
     }
 }

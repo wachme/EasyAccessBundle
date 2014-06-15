@@ -9,6 +9,8 @@ use Wachme\Bundle\EasyAccessBundle\Entity\ClassTarget;
 use Wachme\Bundle\EasyAccessBundle\Entity\ObjectTarget;
 use Wachme\Bundle\EasyAccessBundle\Entity\FieldTarget;
 use Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post;
+use Wachme\Bundle\EasyAccessBundle\Entity\ClassFieldTarget;
+use Wachme\Bundle\EasyAccessBundle\Entity\ObjectFieldTarget;
 
 class TargetManagerTest extends DbTestCase {
     private $manager;
@@ -22,9 +24,8 @@ class TargetManagerTest extends DbTestCase {
         $this->manager = new TargetManager($this->em);
     }
 
-    public function testCreateClass($class=null) {
-        if(!$class)
-            $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
+    public function testCreateClass() {
+        $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
         $target = new ClassTarget();
         $target->setName($class);
         
@@ -32,179 +33,108 @@ class TargetManagerTest extends DbTestCase {
         $this->assertEquals($target, $created);
         $this->em->flush();
         $this->assertNotNull($created->getId());
-        
-        return $created;
     }
 
-    /** @expectedException InvalidArgumentException */
-    public function testCreateObjectException() {
-        $invalid = new \stdClass();
-        $this->manager->createObject($invalid);
+    public function testFindClass() {
+        $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\SpecialPost';
+    
+        $this->assertNull($this->manager->findClass($class));
+
+        $target = $this->manager->createClass($class);
+        $this->em->flush();
+        $this->assertEquals($target, $this->manager->findClass($class));
     }
     
-    public function testCreateObject() {        
+    public function testCreateObject() {
         $this->loadData('post');
         
-        $parentTarget = $this->testCreateClass();
-        $object = $this->getPost();
+        $object = $this->em->getRepository('Test:Post')->findAll()[0];
+        
+        $classTarget = new ClassTarget();
+        $classTarget->setName(get_class($object));
         $target = new ObjectTarget();
-        $target->setName($object->getId());
-        $target->setParent($parentTarget);
-
+        $target->setIdentifier($object->getId());
+        $target->setClass($classTarget);
+        
         $created = $this->manager->createObject($object);
         $this->assertEquals($target, $created);
         $this->em->flush();
         $this->assertNotNull($created->getId());
-
-        return $created;
     }
+    
+    public function testFindObject() {
+        $this->loadData('post');
+        $this->loadData('post');
+        $this->loadData('post');
+    
+        $object = $this->em->getRepository('Test:Post')->findAll()[1];
 
+        $this->assertNull($this->manager->findObject($object));
+        
+        $target = $this->manager->createObject($object);
+        $this->em->flush();
+        $this->assertEquals($target, $this->manager->findObject($object));
+    }
+    
     public function testCreateClassField() {
         $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
         $field = 'title';
-        $parentTarget = $this->testCreateClass();
-        $target = new FieldTarget();
-        $target->setParent($parentTarget);
+        
+        $classTarget = new ClassTarget();
+        $classTarget->setName($class);
+        $target = new ClassFieldTarget();
+        $target->setClass($classTarget);
         $target->setName($field);
         
         $created = $this->manager->createClassField($class, $field);
         $this->assertEquals($target, $created);
         $this->em->flush();
         $this->assertNotNull($created->getId());
+    }
+    
+    public function testFindClassField() {
+        $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
+        $field = 'title';
+
+        $this->assertNull($this->manager->findClassField($class, $field));
         
-        return $created;
+        $target = $this->manager->createClassField($class, $field);
+        $this->em->flush();
+        $this->assertEquals($target, $this->manager->findClassField($class, $field));
     }
     
     public function testCreateObjectField() {
+        $this->loadData('post');
         $field = 'title';
-        $parentTarget = $this->testCreateObject();
-        $object = $this->getPost();
-        $target = new FieldTarget();
-        $target->setParent($parentTarget);
+        $object = $this->em->getRepository('Test:Post')->findAll()[0];
+        
+        $classTarget = new ClassTarget();
+        $classTarget->setName(get_class($object));
+        $objectTarget = new ObjectTarget();
+        $objectTarget->setIdentifier($object->getId());
+        $objectTarget->setClass($classTarget);
+        $target = new ObjectFieldTarget();
+        $target->setObject($objectTarget);
         $target->setName($field);
         
         $created = $this->manager->createObjectField($object, $field);
         $this->assertEquals($target, $created);
         $this->em->flush();
         $this->assertNotNull($created->getId());
-        
-        return $created;
     }
     
-    public function testFindByClass() {
-        $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\SpecialPost';
-        $parentClass = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
-        
-        $this->assertNull($this->manager->findByClass($class));
-        
-        $parentTarget = $this->manager->createClass($parentClass);
-        $this->em->flush();
-        $this->assertEquals($parentTarget, $this->manager->findByClass($class));
-        $this->assertNull($this->manager->findByClass($class, false));
-        
-        $target = $this->manager->createClass($class);
-        $this->em->flush();
-        $this->assertEquals($target, $this->manager->findByClass($class));
-        $this->assertEquals($target, $this->manager->findByClass($class, false));
-    }
-    
-    public function testFindByObject() {
+    public function testFindObjectField() {
         $this->loadData('post');
-        $this->loadData('special_post');
-        
-        $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\SpecialPost';
-        $parentClass = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
-        $object = $this->em->getRepository('Test:SpecialPost')->findAll()[0];
-        $this->assertNull($this->manager->findByObject($object));
-        
-        $parentClassTarget = $this->manager->createClass($parentClass) ;
-        $this->em->flush();
-        $this->assertEquals($parentClassTarget, $this->manager->findByObject($object));
-        $this->assertNull($this->manager->findByObject($object, false));
-        
-        // Object of a class does not inherit target from parent class object:
-        $parentClassObject = $this->getPost();
-        $this->manager->createObject($parentClassObject);
-        $this->em->flush();
-        $this->assertEquals($parentClassTarget, $this->manager->findByObject($object));
-        $this->assertNull($this->manager->findByObject($object, false));
-
-        $classTarget = $this->manager->createClass($class);
-        $this->em->flush();
-        $this->assertEquals($classTarget, $this->manager->findByObject($object));
-        $this->assertNull($this->manager->findByObject($object, false));
-        
-        $target = $this->manager->createObject($object);
-        $this->em->flush();
-        $this->assertEquals($target, $this->manager->findByObject($object));
-        $this->assertEquals($target, $this->manager->findByObject($object, false));
-    }
-    
-    public function testFindByClassField() {
-        $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\SpecialPost';
-        $parentClass = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
-        $field = 'title';
-        $this->assertNull($this->manager->findByClassField($class, $field));
-        
-        $parentClassTarget = $this->manager->createClass($parentClass);
-        $this->em->flush();
-        $this->assertEquals($parentClassTarget, $this->manager->findByClassField($class, $field));
-        $this->assertNull($this->manager->findByClassField($class, $field, false));
-        
-        $parentClassFieldTarget = $this->manager->createClassField($parentClass, $field);
-        $this->em->flush();
-        $this->assertEquals($parentClassFieldTarget, $this->manager->findByClassField($class, $field));
-        $this->assertNull($this->manager->findByClassField($class, $field, false));
-        
-        $classTarget = $this->manager->createClass($class);
-        $this->em->flush();
-        $this->assertEquals($classTarget, $this->manager->findByClassField($class, $field));
-        $this->assertNull($this->manager->findByClassField($class, $field, false));
-        
-        $target = $this->manager->createClassField($class, $field);
-        $this->em->flush();
-        $this->assertEquals($target, $this->manager->findByClassField($class, $field));
-        $this->assertEquals($target, $this->manager->findByClassField($class, $field, false));
-    }
-    
-    public function testFindByObjectField() {
         $this->loadData('post');
-        $this->loadData('special_post');
+        $this->loadData('post');
         
-        $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\SpecialPost';
-        $parentClass = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
-        $object = $this->em->getRepository('Test:SpecialPost')->findAll()[0];
         $field = 'title';
-        $this->assertNull($this->manager->findByObjectField($object, $field));
+        $object = $this->em->getRepository('Test:Post')->findAll()[1];
         
-        $parentClassTarget = $this->manager->createClass($parentClass);
-        $this->em->flush();
-        $this->assertEquals($parentClassTarget, $this->manager->findByObjectField($object, $field));
-        $this->assertNull($this->manager->findByObjectField($object, $field, false));
-        
-        $parentClassFieldTarget = $this->manager->createClassField($parentClass, $field);
-        $this->em->flush();
-        $this->assertEquals($parentClassFieldTarget, $this->manager->findByObjectField($object, $field));
-        $this->assertNull($this->manager->findByObjectField($object, $field, false));
-        
-        $classTarget = $this->manager->createClass($class);
-        $this->em->flush();
-        $this->assertEquals($classTarget, $this->manager->findByObjectField($object, $field));
-        $this->assertNull($this->manager->findByObjectField($object, $field, false));
-        
-        $classFieldTarget = $this->manager->createClassField($class, $field);
-        $this->em->flush();
-        $this->assertEquals($classFieldTarget, $this->manager->findByObjectField($object, $field));
-        $this->assertNull($this->manager->findByObjectField($object, $field, false));
-        
-        $objectTarget = $this->manager->createObject($object);
-        $this->em->flush();
-        $this->assertEquals($objectTarget, $this->manager->findByObjectField($object, $field));
-        $this->assertNull($this->manager->findByObjectField($object, $field, false));
+        $this->assertNull($this->manager->findObjectField($object, $field));
         
         $target = $this->manager->createObjectField($object, $field);
         $this->em->flush();
-        $this->assertEquals($target, $this->manager->findByObjectField($object, $field));
-        $this->assertEquals($target, $this->manager->findByObjectField($object, $field, false));
+        $this->assertEquals($target, $this->manager->findObjectField($object, $field));
     }
 }

@@ -3,15 +3,16 @@
 namespace Wachme\Bundle\EasyAccessBundle\Entity;
 
 use Wachme\Bundle\EasyAccessBundle\Model\TargetInterface;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Target
  *
  * @ORM\Entity()
- * @ORM\InheritanceType("SINGLE_TABLE")
+ * @ORM\InheritanceType("JOINED")
  * @ORM\DiscriminatorColumn(name="discr", type="string")
- * @ORM\DiscriminatorMap({"class" = "ClassTarget", "object" = "ObjectTarget", "field" = "FieldTarget"})
+ * @ORM\DiscriminatorMap({"class" = "ClassTarget", "object" = "ObjectTarget", "class_field" = "ClassFieldTarget", "object_field" = "ObjectFieldTarget"})
  */
 class Target implements TargetInterface {
     /**
@@ -22,22 +23,13 @@ class Target implements TargetInterface {
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
-
     /**
-     * @var string
-     *
-     * @ORM\Column(name="name", type="string", length=255)
-     */
-    private $name;
-    
-    /**
-     * @var Target
+     * @var ArrayCollection
      * 
-     * @ORM\ManyToOne(targetEntity="Target")
+     * @ORM\ManyToMany(targetEntity="Target")
      */
-    private $parent;
-
-
+    private $children;
+    
     /**
      * Get id
      *
@@ -47,38 +39,12 @@ class Target implements TargetInterface {
     {
         return $this->id;
     }
-
-    /**
-     * Set name
-     *
-     * @param string $name
-     * @return Target
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-
-    /**
-     * Get name
-     *
-     * @return string 
-     */
-    public function getName()
-    {
-        return $this->name;
+    
+    public function setChildren($children) {
+        $this->children = $children;
     }
     
-    /**
-     * @param TargetInterface|null $parent
-     */
-    public function setParent(TargetInterface $parent=null) {
-        $this->parent = $parent;
-    }
-    /**
-     * @return TargetInterface|null
-     */
-    public function getParent() {
-        return $this->parent;
+    public function getChildren() {
+        return $this->children;
     }
 }

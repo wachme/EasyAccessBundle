@@ -5,25 +5,25 @@ namespace Wachme\Bundle\EasyAccessBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * ObjectTarget
+ * ClassFieldTarget
  *
  * @ORM\Table()
  * @ORM\Entity
  */
-class ObjectTarget extends Target {
+class ClassFieldTarget extends Target {
     /**
      * @var ClassTarget
-     * 
+     *
      * @ORM\ManyToOne(targetEntity="ClassTarget")
      * @ORM\JoinColumn(nullable=false)
      */
 	private $class;
 	/**
-	 * @var integer
-	 * 
-	 * @ORM\Column(type="integer")
+	 * @var string
+	 *
+	 * @ORM\Column(type="string", length=255)
 	 */
-	private $identifier;
+	private $name;
 	
 	public function setClass($class) {
 	    $this->class = $class;
@@ -33,11 +33,11 @@ class ObjectTarget extends Target {
 	    return $this->class;
 	}
 	
-	public function setIdentifier($identifier) {
-	    $this->identifier = $identifier;
+	public function setName($name) {
+	    $this->name = $name;
 	}
 	
-	public function getIdentifier() {
-	    return $this->identifier;
+	public function getName() {
+	    return $this->name;
 	}
 }

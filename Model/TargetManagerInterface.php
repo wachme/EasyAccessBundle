@@ -16,14 +16,12 @@ interface TargetManagerInterface {
      */
     public function createObject($object);
     /**
-     * 
      * @param string $class
      * @param string $field
      * @return TargetInterface
      */
     public function createClassField($class, $field);
     /**
-     *
      * @param object $object
      * @param string $field
      * @return TargetInterface
@@ -31,28 +29,46 @@ interface TargetManagerInterface {
     public function createObjectField($object, $field);
     /**
      * @param string $class
-     * @param boolean $recursive 
      * @return TargetInterface|null
      */
-    public function findByClass($class, $recursive=true);
+    public function findClass($class);
     /**
      * @param object $object
-     * @param boolean $recursive 
      * @return TargetInterface|null
      */
-    public function findByObject($object, $recursive=true);
+    public function findObject($object);
     /**
      * @param string $class
      * @param string $field
-     * @param boolean $recursive 
      * @return TargetInterface|null
      */
-    public function findByClassField($class, $field, $recursive=true);
+    public function findClassField($class, $field);
     /**
      * @param object $object
      * @param string $field
-     * @param boolean $recursive 
      * @return TargetInterface|null
      */
-    public function findByObjectField($object, $field, $recursive=true);
+    public function findObjectField($object, $field);
+    /**
+     * @param string $class
+     * @return TargetInterface
+     */
+    public function findOrCreateClass($class);
+    /**
+     * @param object $object
+     * @return TargetInterface;
+     */
+    public function findOrCreateObject($object);
+    /**
+     * @param string $class
+     * @param string $field
+     * @return TargetInterface
+     */
+    public function findOrCreateClassField($class, $field);
+    /**
+     * @param object $object
+     * @param string $field
+     * @return TargetInterface
+     */
+    public function findOrCreateObjectField($object, $field);
 }
