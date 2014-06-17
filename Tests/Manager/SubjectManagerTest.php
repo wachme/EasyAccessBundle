@@ -28,14 +28,14 @@ class SubjectManagerTest extends DbTestCase {
         $this->assertNotNull($created->getId());
     }
     
-    public function testFindByUser() {
+    public function testFindUser() {
         $this->loadData('user');
 
         $user = $this->em->getRepository('Test:User')->findAll()[0];
-        $this->assertNull($this->manager->findByUser($user));
+        $this->assertNull($this->manager->findUser($user));
         
         $subject = $this->manager->createUser($user);
         $this->em->flush();
-        $this->assertEquals($subject, $this->manager->findByUser($user));
+        $this->assertEquals($subject, $this->manager->findUser($user));
     }
 }

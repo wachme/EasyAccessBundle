@@ -10,12 +10,21 @@ use Wachme\Bundle\EasyAccessBundle\Manager\RuleManager;
 use Wachme\Bundle\EasyAccessBundle\Attribute\AttributeMap;
 
 class AccessManagerTest extends DbTestCase {
+    /**
+     * @var AccessManager
+     */
     private $manager;
     
     protected function setUp() {
         parent::setUp();
         
-        $this->manager = static::$kernel->getContainer()->get('easy_access');
+        $this->manager = new AccessManager(
+            $this->em,
+	        new TargetManager($this->em),
+            new SubjectManager($this->em),
+            new RuleManager($this->em),
+            new AttributeMap()
+        );
     }
     
     public function testAllow() {

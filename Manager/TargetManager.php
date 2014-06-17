@@ -9,7 +9,6 @@ use Wachme\Bundle\EasyAccessBundle\Entity\ObjectTarget;
 use Wachme\Bundle\EasyAccessBundle\Entity\ClassFieldTarget;
 use Wachme\Bundle\EasyAccessBundle\Entity\ObjectFieldTarget;
 use Doctrine\ORM\QueryBuilder;
-use Doctrine\ORM\Query\Expr\Select;
 
 /**
  * Manages target entities in database
@@ -227,7 +226,7 @@ class TargetManager implements TargetManagerInterface {
      * {@inheritdoc}
      */
     public function selectClassFieldSet(QueryBuilder $qb, $class, $field) {
-        $select = $this->selectObject($qb, $object);
+        $select = $this->selectClassField($qb, $object);
         $qb->leftJoin('target.ancestors', 'target_ancestors');
         
         return array_merge($select, ['target_ancestors']);
@@ -236,7 +235,7 @@ class TargetManager implements TargetManagerInterface {
      * {@inheritdoc}
      */
     public function selectObjectFieldSet(QueryBuilder $qb, $object, $field) {
-        $select = $this->selectObject($qb, $object);
+        $select = $this->selectObjectField($qb, $object);
         $qb->leftJoin('target.ancestors', 'target_ancestors');
         
         return array_merge($select, ['target_ancestors']);

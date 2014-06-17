@@ -5,6 +5,7 @@ namespace Wachme\Bundle\EasyAccessBundle\Model;
 use Wachme\Bundle\EasyAccessBundle\Model\RuleInterface;
 use Wachme\Bundle\EasyAccessBundle\Model\TargetInterface;
 use Wachme\Bundle\EasyAccessBundle\Model\SubjectInterface;
+use Doctrine\ORM\QueryBuilder;
 
 interface RuleManagerInterface {
     /**
@@ -12,7 +13,7 @@ interface RuleManagerInterface {
      * @param SubjectInterface $subject
      * @return RuleInterface
      */
-    public function create(TargetInterface $target, SubjectInterface $subject, $mask=0, RuleInterface $parent=null);
+    public function create(TargetInterface $target, SubjectInterface $subject, $mask=0);
     /**
      * @param TargetInterface $target
      * @param SubjectInterface $subject
@@ -21,12 +22,13 @@ interface RuleManagerInterface {
     public function find(TargetInterface $target, SubjectInterface $subject);
     /**
      * @param TargetInterface $target
-     * @return RuleInterface|null
-     */
-    public function findByTarget(TargetInterface $target);
-    /**
      * @param SubjectInterface $subject
-     * @return RuleInterface|null
+     * @return RuleInterface
      */
-    public function findBySubject(SubjectInterface $subject);
+    public function findOrCreate(TargetInterface $target, SubjectInterface $subject);
+    /**
+     * @param QueryBuilder $qb
+     * @return array
+     */
+    public function selectRuleSet(QueryBuilder $qb);
 }

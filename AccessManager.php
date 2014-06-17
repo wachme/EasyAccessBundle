@@ -35,42 +35,33 @@ class AccessManager {
     private $attributeMap;
 
     /**
+     * 
      * @param string|array|object $element
-     * @param boolean $recursive
-     * @param boolean $create
+     * @param callable $classFn
+     * @param callable $objectFn
+     * @param callable $classFieldFn
+     * @param callable $objectFieldFn
      * @throws \InvalidArgumentException
-     * @return TargetInterface|null
+     * @return mixed
      */
-    private function getTarget($element, $recursive=true, $create=false) {
+    private function resolveTarget($element, callable $classFn, callable $objectFn, callable $classFieldFn, callable $objectFieldFn) {
         switch(gettype($element)) {
         	case 'string':
-        	    if($target = $this->targetManager->findByClass($element, $recursive))
-        	        return $target;
-        	    if($create)
-        	        return $this->targetManager->createClass($element);
-        	    break;
+        	    return $classFn($element);
         	    
         	case 'array':
         	    if(count($element) != 2)
         	        throw new \InvalidArgumentException();
         	     
         	    if(is_string($element[0])) {
-        	        if(is_string($element[1])) {
-        	            if($target = $this->targetManager->findByClassField($element[0], $element[1], $recursive))
-        	                return $target;
-        	            if($create)
-        	                return $this->targetManager->createClassField($element[0], $element[1]);
-        	        }
+        	        if(is_string($element[1]))
+        	            return $classFieldFn($element[0], $element[1]);
         	        else
         	            throw new \InvalidArgumentException();
         	    }
         	    elseif(is_object($element[0])) {
-        	        if(is_string($element[1])) {
-        	            if($target = $this->targetManager->findByObjectField($element[0], $element[1], $recursive))
-        	                return $target;
-        	            if($create)
-        	                return $this->targetManager->createObjectField($element[0], $element[1]);
-        	        }
+        	        if(is_string($element[1]))
+        	            return $objectFieldFn($element[0], $element[1]);
         	        else
         	            throw new \InvalidArgumentException();
         	    }
@@ -79,39 +70,11 @@ class AccessManager {
         	    break;
         	    
         	case 'object':
-        	    if($target = $this->targetManager->findByObject($element, $recursive))
-        	        return $target;
-        	    if($create)
-        	        return $this->targetManager->createObject($element);
-        	    break;
+        	    return $objectFn($element);
         	    
         	default:
         	    throw new \InvalidArgumentException();
         }
-    }
-    /**
-     * @param object $user
-     * @param boolean $create
-     * @return SubjectInterface|null
-     */
-    private function getSubject($user, $create=false) {
-        if($subject = $this->subjectManager->findByUser($user))
-            return $subject;
-        if($create)
-            return $this->subjectManager->createUser($user);
-    }
-    /**
-     * 
-     * @param TargetInterface $target
-     * @param SubjectInterface $subject
-     * @param boolean $create
-     * @return RuleInterface|null
-     */
-    private function getRule(TargetInterface $target, SubjectInterface $subject, $recursive=true, $create=false) {
-        if($rule = $this->ruleManager->find($target, $subject, $recursive))
-            return $rule;
-        if($create)
-            return $this->ruleManager->create($target, $subject);
     }
 
     /**
@@ -136,10 +99,14 @@ class AccessManager {
         if(!is_array($attributes))
             $attributes = [$attributes];
         
-        $target = $this->getTarget($element, false, true);
-        $subject = $this->getSubject($user, true);
-        $rule = $this->getRule($target, $subject, false, true);
+        $target = $this->resolveTarget($element,
+            [$this->targetManager, 'findOrCreateClass'],
+            [$this->targetManager, 'findOrCreateObject'],
+            [$this->targetManager, 'findOrCreateClassField'],
+            [$this->targetManager, 'findOrCreateObjectField']);
         
+        $subject = $this->subjectManager->findOrCreateUser($user);
+        $rule = $this->ruleManager->findOrCreate($target, $subject);
         $mask = $this->attributeMap->getMask($attributes);
         $rule->setMask($mask);
         
@@ -163,6 +130,6 @@ class AccessManager {
         $mask = $this->attributeMap->getMask($attributes);
         $rule = $this->getRule($target, $subject);
         
-        return $rule && ($mask & $rule->getMask()) == $mask;        
+        return $rule && ($mask & $rule->getMask()) == $mask;
     }
 }
