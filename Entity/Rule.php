@@ -27,7 +27,7 @@ class Rule implements RuleInterface
     /**
      * @var Target
      * 
-     * @ORM\ManyToOne(targetEntity="Target")
+     * @ORM\ManyToOne(targetEntity="Target", inversedBy="rules")
      * @ORM\JoinColumn(nullable=false)
      */
     private $target;

@@ -13,4 +13,12 @@ interface TargetInterface {
      * @return ArrayCollection
      */
     public function getChildren();
+    /**
+     * @return ArrayCollection
+     */
+    public function getAncestors();
+    /**
+     * @return ArrayCollection
+     */
+    public function getRules();
 }

@@ -11,6 +11,9 @@ use Wachme\Bundle\EasyAccessBundle\Entity\FieldTarget;
 use Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post;
 use Wachme\Bundle\EasyAccessBundle\Entity\ClassFieldTarget;
 use Wachme\Bundle\EasyAccessBundle\Entity\ObjectFieldTarget;
+use Doctrine\ORM\QueryBuilder;
+use Wachme\Bundle\EasyAccessBundle\Entity\Rule;
+use Wachme\Bundle\EasyAccessBundle\Entity\Subject;
 
 class TargetManagerTest extends DbTestCase {
     private $manager;
