@@ -3,7 +3,6 @@
 namespace Wachme\Bundle\EasyAccessBundle\Model;
 
 use Wachme\Bundle\EasyAccessBundle\Model\TargetInterface;
-use Doctrine\ORM\QueryBuilder;
 
 interface TargetManagerInterface {
     /**
@@ -73,29 +72,29 @@ interface TargetManagerInterface {
      */
     public function findOrCreateObjectField($object, $field);
     /**
-     * @param QueryBuilder $qb
      * @param string $class
-     * @return array
+     * @param object $user
+     * @return TargetInterface|null
      */
-    public function selectClassSet(QueryBuilder $qb, $class);
+    public function findClassSet($class, $user);
     /**
-     * @param QueryBuilder $qb
      * @param object $object
-     * @return array
+     * @param object $user
+     * @return TargetInterface|null
      */
-    public function selectObjectSet(QueryBuilder $qb, $object);
+    public function findObjectSet($object, $user);
     /**
-     * @param QueryBuilder $qb
      * @param string $class
      * @param string $field
-     * @return array
+     * @param object $user
+     * @return TargetInterface|null
      */
-    public function selectClassFieldSet(QueryBuilder $qb, $class, $field);
+    public function findClassFieldSet($class, $field, $user);
     /**
-     * @param QueryBuilder $qb
      * @param object $object
      * @param string $field
-     * @return array
+     * @param object $user
+     * @return TargetInterface|null
      */
-    public function selectObjectFieldSet(QueryBuilder $qb, $object, $field);
+    public function findObjectFieldSet($object, $field, $user);
 }

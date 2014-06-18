@@ -8,7 +8,6 @@ use Wachme\Bundle\EasyAccessBundle\Model\TargetInterface;
 use Wachme\Bundle\EasyAccessBundle\Model\SubjectInterface;
 use Doctrine\ORM\EntityManager;
 use Wachme\Bundle\EasyAccessBundle\Entity\Rule;
-use Doctrine\ORM\QueryBuilder;
 
 class RuleManager implements RuleManagerInterface {
     /**
@@ -45,15 +44,5 @@ class RuleManager implements RuleManagerInterface {
      */
     public function findOrCreate(TargetInterface $target, SubjectInterface $subject) {
         return $this->find($target, $subject) ?: $this->create($target, $subject);
-    }
-    /**
-     * {@inheritdoc}
-     */
-    public function selectRuleSet(QueryBuilder $qb) {
-        $qb
-            ->leftJoin('target.rules', 'target_rules')
-            ->leftJoin('target_ancestors.rules', 'target_ancestors_rules');
-        
-        return ['target_rules', 'target_ancestors_rules'];
     }
 }

@@ -26,9 +26,8 @@ class TargetManager implements TargetManagerInterface {
      */
     private function getSelected($method, $args) {
         $qb = $this->em->createQueryBuilder();
-        return $qb->select(
-            call_user_method_array($method, $this, array_merge([$qb], $args))
-        )->getQuery()->getOneOrNullResult();
+        call_user_method_array($method, $this, array_merge([$qb], $args));
+        return $qb->getQuery()->getOneOrNullResult();
     }
     /**
      * @param QueryBuilder $qb
@@ -37,11 +36,10 @@ class TargetManager implements TargetManagerInterface {
      */
     private function selectClass(QueryBuilder $qb, $class) {
         $qb
-        ->from('EasyAccessBundle:ClassTarget', 'target')
-        ->andWhere('target.name = :class')
-        ->setParameter('class', $class);
-    
-        return ['target'];
+            ->addSelect('target')
+            ->from('EasyAccessBundle:ClassTarget', 'target')
+            ->andWhere('target.name = :target_class')
+            ->setParameter('target_class', $class);
     }
     /**
      * @param QueryBuilder $qb
@@ -50,16 +48,13 @@ class TargetManager implements TargetManagerInterface {
      */
     private function selectObject(QueryBuilder $qb, $object) {
         $qb
-        ->from('EasyAccessBundle:ObjectTarget', 'target')
-        ->join('target.class', 'c')
-        ->where('target.identifier = :identifier')
-        ->andWhere('c.name = :class')
-        ->setParameters([
-            'identifier' => $object->getId(),
-            'class' => get_class($object)
-            ]);
-    
-        return ['target'];
+            ->addSelect('target')
+            ->from('EasyAccessBundle:ObjectTarget', 'target')
+            ->join('target.class', 'c')
+            ->andWhere('target.identifier = :target_identifier')
+            ->andWhere('c.name = :target_class')
+            ->setParameter('target_identifier', $object->getId())
+            ->setParameter('target_class', get_class($object));
     }
     /**
      * @param QueryBuilder $qb
@@ -69,16 +64,13 @@ class TargetManager implements TargetManagerInterface {
      */
     private function selectClassField(QueryBuilder $qb, $class, $field) {
         $qb
-        ->from('EasyAccessBundle:ClassFieldTarget', 'target')
-        ->join('target.class', 'c')
-        ->where('target.name = :name')
-        ->andWhere('c.name = :class')
-        ->setParameters([
-            'name' => $field,
-            'class' => $class
-            ]);
-    
-        return ['target'];
+            ->addSelect('target')
+            ->from('EasyAccessBundle:ClassFieldTarget', 'target')
+            ->join('target.class', 'c')
+            ->andWhere('target.name = :target_field')
+            ->andWhere('c.name = :target_class')
+            ->setParameter('target_field', $field)
+            ->setParameter('target_class', $class);
     }
     /**
      * @param QueryBuilder $qb
@@ -88,19 +80,42 @@ class TargetManager implements TargetManagerInterface {
      */
     private function selectObjectField(QueryBuilder $qb, $object, $field) {
         $qb
-        ->from('EasyAccessBundle:ObjectFieldTarget', 'target')
-        ->join('target.object', 'o')
-        ->join('o.class', 'c')
-        ->where('target.name = :name')
-        ->andWhere('o.identifier = :identifier')
-        ->andWhere('c.name = :class')
-        ->setParameters([
-            'name' => $field,
-            'identifier' => $object->getId(),
-            'class' => get_class($object)
-            ]);
+            ->addSelect('target')
+            ->from('EasyAccessBundle:ObjectFieldTarget', 'target')
+            ->join('target.object', 'o')
+            ->join('o.class', 'c')
+            ->where('target.name = :target_field')
+            ->andWhere('o.identifier = :target_identifier')
+            ->andWhere('c.name = :target_class')
+            ->setParameter('target_field', $field)
+            ->setParameter('target_identifier', $object->getId())
+            ->setParameter('target_class', get_class($object));
+    }
     
-        return ['target'];
+    private function addSelectSet(QueryBuilder $qb, $user) {
+        $qb
+            ->addSelect(['target_rules', 'target_ancestors', 'target_ancestors_rules'])
+            ->leftJoin('target.rules', 'target_rules', 'WITH', $qb->expr()->in(
+                'target_rules.subject',
+                $this->em->createQueryBuilder()
+                    ->select('s1')
+                    ->from('EasyAccessBundle:Subject', 's1')
+                    ->where('s1.type = :subject_type')
+                    ->andWhere('s1.identifier = :subject_identifier')
+                    ->getDQL()
+            ))
+            ->leftJoin('target.ancestors', 'target_ancestors')
+            ->leftJoin('target_ancestors.rules', 'target_ancestors_rules', 'WITH', $qb->expr()->in(
+                'target_ancestors_rules.subject',
+                $this->em->createQueryBuilder()
+                    ->select('s2')
+                    ->from('EasyAccessBundle:Subject', 's2')
+                    ->where('s2.type = :subject_type')
+                    ->andWhere('s2.identifier = :subject_identifier')
+                    ->getDQL()
+            ))
+            ->setParameter('subject_type', get_class($user))
+            ->setParameter('subject_identifier', $user->getId());
     }
     
     /**
@@ -207,37 +222,41 @@ class TargetManager implements TargetManagerInterface {
     /**
      * {@inheritdoc}
      */
-    public function selectClassSet(QueryBuilder $qb, $class) {
-        $select = $this->selectClass($qb, $class);
-        $qb->leftJoin('target.ancestors', 'target_ancestors');
+    public function findClassSet($class, $user) {
+        $qb = $this->em->createQueryBuilder();
+        $this->selectClass($qb, $class);
+        $this->addSelectSet($qb, $user);
         
-        return array_merge($select, ['target_ancestors']);
+        return $qb->getQuery()->getOneOrNullResult();
     }
     /**
      * {@inheritdoc}
      */
-    public function selectObjectSet(QueryBuilder $qb, $object) {
-        $select = $this->selectObject($qb, $object);
-        $qb>leftJoin('target.ancestors', 'target_ancestors');
+    public function findObjectSet($object, $user) {
+        $qb = $this->em->createQueryBuilder();
+        $this->selectObject($qb, $class);
+        $this->addSelectSet($qb, $user);
         
-        return array_merge($select, ['target_ancestors']);
+        return $qb->getQuery()->getOneOrNullResult();
     }
     /**
      * {@inheritdoc}
      */
-    public function selectClassFieldSet(QueryBuilder $qb, $class, $field) {
-        $select = $this->selectClassField($qb, $object);
-        $qb->leftJoin('target.ancestors', 'target_ancestors');
+    public function findClassFieldSet($class, $field, $user) {
+        $qb = $this->em->createQueryBuilder();
+        $this->selectClassField($qb, $class);
+        $this->addSelectSet($qb, $user);
         
-        return array_merge($select, ['target_ancestors']);
+        return $qb->getQuery()->getOneOrNullResult();
     }
     /**
      * {@inheritdoc}
      */
-    public function selectObjectFieldSet(QueryBuilder $qb, $object, $field) {
-        $select = $this->selectObjectField($qb, $object);
-        $qb->leftJoin('target.ancestors', 'target_ancestors');
+    public function findObjectFieldSet($object, $field, $user) {
+        $qb = $this->em->createQueryBuilder();
+        $this->selectObjectField($qb, $class);
+        $this->addSelectSet($qb, $user);
         
-        return array_merge($select, ['target_ancestors']);
+        return $qb->getQuery()->getOneOrNullResult();
     }
 }

@@ -8,8 +8,6 @@ use Wachme\Bundle\EasyAccessBundle\Model\SubjectManagerInterface;
 use Wachme\Bundle\EasyAccessBundle\Model\RuleManagerInterface;
 use Wachme\Bundle\EasyAccessBundle\Attribute\AttributeMap;
 use Wachme\Bundle\EasyAccessBundle\Model\TargetInterface;
-use Wachme\Bundle\EasyAccessBundle\Model\SubjectInterface;
-use Wachme\Bundle\EasyAccessBundle\Model\RuleInterface;
 
 class AccessManager {
     
@@ -35,7 +33,6 @@ class AccessManager {
     private $attributeMap;
 
     /**
-     * 
      * @param string|array|object $element
      * @param callable $classFn
      * @param callable $objectFn
@@ -76,6 +73,17 @@ class AccessManager {
         	    throw new \InvalidArgumentException();
         }
     }
+    /**
+     * @param string|array|object $element
+     * @return TargetInterface
+     */
+    private function findOrCreateTarget($element) {
+        return $this->resolveTarget($element,
+            [$this->targetManager, 'findOrCreateClass'],
+            [$this->targetManager, 'findOrCreateObject'],
+            [$this->targetManager, 'findOrCreateClassField'],
+            [$this->targetManager, 'findOrCreateObjectField']);
+    }
 
     /**
      * @param TargetManagerInterface $targetManager
@@ -99,11 +107,7 @@ class AccessManager {
         if(!is_array($attributes))
             $attributes = [$attributes];
         
-        $target = $this->resolveTarget($element,
-            [$this->targetManager, 'findOrCreateClass'],
-            [$this->targetManager, 'findOrCreateObject'],
-            [$this->targetManager, 'findOrCreateClassField'],
-            [$this->targetManager, 'findOrCreateObjectField']);
+        $target = $this->findOrCreateTarget($element);
         
         $subject = $this->subjectManager->findOrCreateUser($user);
         $rule = $this->ruleManager->findOrCreate($target, $subject);
@@ -122,14 +126,37 @@ class AccessManager {
         if(!is_array($attributes))
             $attributes = [$attributes];
         
-        $target = $this->getTarget($element);
-        $subject = $this->getSubject($user);
-        if(!$target || !$subject)
-            return false;
+	    $target = $this->resolveTarget($element,
+            function($class) use ($user) {
+                return $this->targetManager->findClassSet($class, $user);
+            },
+            function($object) use ($user) {
+                return $this->targetManager->findObjectSet($object, $user);
+            },
+            function($class, $field) use ($user) {
+                return $this->targetManager->findClassFieldSet($class, $field, $user);
+            },
+            function($object, $field) use ($user) {
+                return $this->targetManager->findObjectFieldSet($object, $field, $user);
+            }
+        );
+	    
+	    // TODO: make access decision
+	    
+	    return $target;
+    }
+    /**
+     * @param string|array|object $element
+     * @param string|array|object $parentElement
+     */
+    public function setParent($element, $parentElement) {
+        $target = $this->findOrCreateTarget($element);
+        $parentTarget = $this->findOrCreateTarget($parentElement);
         
-        $mask = $this->attributeMap->getMask($attributes);
-        $rule = $this->getRule($target, $subject);
+        // TODO: use TargetManager's method
         
-        return $rule && ($mask & $rule->getMask()) == $mask;
+        $parentTarget->getChildren()->add($target);
+        
+        $this->em->flush();
     }
 }

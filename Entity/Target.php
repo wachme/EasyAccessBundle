@@ -82,7 +82,5 @@ class Target implements TargetInterface {
     
     public function __construct() {
         $this->children = new ArrayCollection();
-        $this->ancestors = new ArrayCollection();
-        $this->rules = new ArrayCollection();
     }
 }
