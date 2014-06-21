@@ -3,6 +3,7 @@
 namespace Wachme\Bundle\EasyAccessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * ObjectTarget
@@ -14,7 +15,7 @@ class ObjectTarget extends Target {
     /**
      * @var ClassTarget
      * 
-     * @ORM\ManyToOne(targetEntity="ClassTarget")
+     * @ORM\ManyToOne(targetEntity="ClassTarget", inversedBy="objects")
      * @ORM\JoinColumn(nullable=false)
      */
 	private $class;
@@ -24,6 +25,12 @@ class ObjectTarget extends Target {
 	 * @ORM\Column(type="integer")
 	 */
 	private $identifier;
+	/**
+	 * @var ArrayCollection
+	 * 
+	 * @ORM\OneToMany(targetEntity="ObjectFieldTarget", mappedBy="object")
+	 */
+	private $fields;
 	
 	public function setClass($class) {
 	    $this->class = $class;
@@ -39,5 +46,9 @@ class ObjectTarget extends Target {
 	
 	public function getIdentifier() {
 	    return $this->identifier;
+	}
+	
+	public function getFields() {
+	    return $this->fields;
 	}
 }

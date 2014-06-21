@@ -26,7 +26,109 @@ class TargetManagerTest extends DbTestCase {
         parent::setUp();
         $this->manager = new TargetManager($this->em);
     }
-
+    
+    public function testFindClassSet() {
+        $this->loadData('user');
+        $user = $this->em->getRepository('Test:User')->findAll()[0];
+        $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
+        
+        $this->assertNull($this->manager->findClassSet($class, $user));
+        
+        $target = $this->manager->createClass($class);
+        $this->em->flush();
+        
+        $this->assertEquals($target, $this->manager->findClassSet($class, $user));
+    }
+    
+    public function testFindObjectSet() {
+        $this->loadData('post');
+        $this->loadData('user');
+    
+        $object = $this->em->getRepository('Test:Post')->findAll()[0];
+        $user = $this->em->getRepository('Test:User')->findAll()[0];
+        $class = get_class($object);
+        
+        $this->assertNull($this->manager->findObjectSet($object, $user));
+        
+        $classTarget = $this->manager->createClass($class);
+        $this->em->flush();
+        
+        $found = $this->manager->findObjectSet($object, $user);
+        $this->assertEquals($classTarget, $found);
+        
+        $target = $this->manager->createObject($object);
+        $this->em->flush();
+        $this->em->clear();
+        
+        $found = $this->manager->findObjectSet($object, $user);
+        $this->assertInstanceOf(get_class($target), $found);
+        $this->assertEquals($target->getId(), $found->getId());
+    }
+    
+    public function testFindClassFieldSet() {
+        $this->loadData('user');
+        $user = $this->em->getRepository('Test:User')->findAll()[0];
+        $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
+        $field = 'title';
+        
+        $this->assertNull($this->manager->findClassFieldSet($class, $field, $user));
+        
+        $classTarget = $this->manager->createClass($class);
+        $this->em->flush();
+        
+        $found = $this->manager->findClassFieldSet($class, $field, $user);
+        $this->assertEquals($classTarget, $found);
+        
+        $target = $this->manager->createClassField($class, $field);
+        $this->em->flush();
+        $this->em->clear();
+        
+        $found = $this->manager->findClassFieldSet($class, $field, $user);
+        $this->assertInstanceOf(get_class($target), $found);
+        $this->assertEquals($target->getId(), $found->getId());
+    }
+    
+    public function testFindObjectFieldSet() {
+        $this->loadData('user');
+        $this->loadData('post');
+        $user = $this->em->getRepository('Test:User')->findAll()[0];
+        $object = $this->em->getRepository('Test:Post')->findAll()[0];
+        $class = get_class($object);
+        $field = 'title';
+        
+        $this->assertNull($this->manager->findObjectFieldSet($object, $field, $user));
+        
+        $classTarget = $this->manager->createClass($class);
+        $this->em->flush();
+        
+        $found = $this->manager->findObjectFieldSet($object, $field, $user);
+        $this->assertEquals($classTarget, $found);
+        
+        $classFieldTarget = $this->manager->createClassField($class, $field);
+        $this->em->flush();
+        $this->em->clear();
+        
+        $found = $this->manager->findObjectFieldSet($object, $field, $user);
+        $this->assertInstanceOf(get_class($classFieldTarget), $found);
+        $this->assertEquals($classFieldTarget->getId(), $found->getId());
+        
+        $objectTarget = $this->manager->createObject($object);
+        $this->em->flush();
+        $this->em->clear();
+        
+        $found = $this->manager->findObjectFieldSet($object, $field, $user);
+        $this->assertInstanceOf(get_class($objectTarget), $found);
+        $this->assertEquals($objectTarget->getId(), $found->getId());
+        
+        $target = $this->manager->createObjectField($object, $field);
+        $this->em->flush();
+        $this->em->clear();
+        
+        $found = $this->manager->findObjectFieldSet($object, $field, $user);
+        $this->assertInstanceOf(get_class($target), $found);
+        $this->assertEquals($target->getId(), $found->getId());
+    }
+    
     public function testCreateClass() {
         $class = 'Wachme\Bundle\EasyAccessBundle\Tests\Fixtures\Entity\Post';
         $target = new ClassTarget();

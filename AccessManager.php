@@ -142,8 +142,6 @@ class AccessManager {
         );
 	    
 	    // TODO: make access decision
-	    
-	    return $target;
     }
     /**
      * @param string|array|object $element

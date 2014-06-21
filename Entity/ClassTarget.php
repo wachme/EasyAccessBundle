@@ -3,6 +3,7 @@
 namespace Wachme\Bundle\EasyAccessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * ClassTarget
@@ -17,6 +18,18 @@ class ClassTarget extends Target {
      * @ORM\Column(type="string", length=255)
      */
 	private $name;
+	/**
+	 * @var ArrayCollection
+	 * 
+	 * @ORM\OneToMany(targetEntity="ObjectTarget", mappedBy="class")
+	 */
+	private $objects;
+	/**
+	 * @var ArrayCollection
+	 * 
+	 * @ORM\OneToMany(targetEntity="ClassFieldTarget", mappedBy="class")
+	 */
+	private $fields;
 	
 	public function setName($name) {
 	    $this->name = $name;
@@ -24,5 +37,13 @@ class ClassTarget extends Target {
 	
 	public function getName() {
 	    return $this->name;
+	}
+	
+	public function getObjects() {
+	    return $this->objects;
+	}
+	
+	public function getFields() {
+	    return $this->fields;
 	}
 }
