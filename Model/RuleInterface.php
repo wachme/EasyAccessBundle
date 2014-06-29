@@ -19,11 +19,11 @@ interface RuleInterface {
      */
     public function getSubject();
     /**
-     * @param integer $mask
+     * @return integer
      */
-    public function setMask($mask);
+    public function getAllowMask();
     /**
      * @return integer
      */
-    public function getMask();
+    public function getDenyMask();
 }

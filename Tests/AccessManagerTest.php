@@ -8,6 +8,7 @@ use Wachme\Bundle\EasyAccessBundle\Manager\TargetManager;
 use Wachme\Bundle\EasyAccessBundle\Manager\SubjectManager;
 use Wachme\Bundle\EasyAccessBundle\Manager\RuleManager;
 use Wachme\Bundle\EasyAccessBundle\Attribute\AttributeMap;
+use Doctrine\DBAL\Logging\DebugStack;
 
 class AccessManagerTest extends DbTestCase {
     /**
@@ -28,6 +29,19 @@ class AccessManagerTest extends DbTestCase {
     }
     
     public function testAllow() {
-        $this->markTestSkipped('Not implemented yet');
+        $this->loadData('post');
+        $this->loadData('user');
+        
+        $user = $this->em->getRepository('Test:User')->findAll()[0];
+        $object = $this->em->getRepository('Test:Post')->findAll()[0];
+        $class = get_class($object);
+        
+        $this->manager->allow($class, $user, 'view');
+        $this->manager->allow([$class, 'title'], $user, 'edit');
+        $this->manager->deny($object, $user, 'edit');
+        $this->em->clear();
+        
+        $this->assertTrue($this->manager->isAllowed([$object, 'title'], $user, 'view'));
+        $this->assertFalse($this->manager->isAllowed([$object, 'title'], $user, 'edit'));
     }
 }

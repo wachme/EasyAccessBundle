@@ -24,11 +24,10 @@ class RuleManager implements RuleManagerInterface {
     /**
      * {@inheritdoc}
      */
-    public function create(TargetInterface $target, SubjectInterface $subject, $mask=0) {
+    public function create(TargetInterface $target, SubjectInterface $subject) {
         $rule = new Rule();
         $rule->setTarget($target);
         $rule->setSubject($subject);
-        $rule->setMask($mask);
         $this->em->persist($rule);
         return $rule;
     }
@@ -44,5 +43,19 @@ class RuleManager implements RuleManagerInterface {
      */
     public function findOrCreate(TargetInterface $target, SubjectInterface $subject) {
         return $this->find($target, $subject) ?: $this->create($target, $subject);
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function allow(RuleInterface $rule, $mask) {
+        $rule->setAllowMask($mask);
+        $rule->setDenyMask($rule->getDenyMask() & ~$mask);
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function deny(RuleInterface $rule, $mask) {
+        $rule->setDenyMask($mask);
+        $rule->setAllowMask($rule->getAllowMask() & ~$mask);
     }
 }

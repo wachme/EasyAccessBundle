@@ -9,6 +9,7 @@ use Wachme\Bundle\EasyAccessBundle\Entity\ObjectTarget;
 use Wachme\Bundle\EasyAccessBundle\Entity\ClassFieldTarget;
 use Wachme\Bundle\EasyAccessBundle\Entity\ObjectFieldTarget;
 use Doctrine\ORM\QueryBuilder;
+use Wachme\Bundle\EasyAccessBundle\Model\TargetInterface;
 
 /**
  * Manages target entities in database
@@ -166,6 +167,26 @@ class TargetManager implements TargetManagerInterface {
             ->leftJoin($alias . '.ancestors', $ancestors);
         $this->selectTargetRules($qb, $ancestors, $user);
     }
+    /**
+     * @param TargetInterface $target
+     * @param TargetInterface $parentTarget
+     */
+    public function inherit($target, $parentTarget) {
+        $parentTarget->addChild($target);
+        if($children = $target->getChildren()) {
+            foreach($children as $child)
+                $parentTarget->addChild($child);
+        }
+    
+        if($ancestors = $parentTarget->getAncestors()) {
+            foreach($ancestors as $ancestor) {
+                $ancestor->addChild($target);
+                if($children)
+                foreach($children as $child)
+                    $ancestor->addChild($child);
+            }
+        }
+    }
     
     /**
      * @param EntityManager $em
@@ -194,6 +215,9 @@ class TargetManager implements TargetManagerInterface {
         $target->setClass($classTarget);
         $target->setIdentifier($id);
         $this->em->persist($target);
+        
+        $this->inherit($target, $classTarget);
+        
         return $target;
     }
     /**
@@ -206,6 +230,9 @@ class TargetManager implements TargetManagerInterface {
         $target->setClass($classTarget);
         $target->setName($field);
         $this->em->persist($target);
+        
+        $this->inherit($target, $classTarget);
+        
         return $target;
     }
     /**
@@ -213,11 +240,14 @@ class TargetManager implements TargetManagerInterface {
      */
     public function createObjectField($object, $field) {
         $objectTarget = $this->findOrCreateObject($object);
-    
+        
         $target = new ObjectFieldTarget();
         $target->setObject($objectTarget);
         $target->setName($field);
         $this->em->persist($target);
+        
+        $this->inherit($target, $objectTarget);
+        
         return $target;
     }
     /**

@@ -45,7 +45,13 @@ class Rule implements RuleInterface
      * 
      * @ORM\Column(type="integer")
      */
-    private $mask;
+    private $allowMask = 0;
+    /**
+     * @var integer
+     *
+     * @ORM\Column(type="integer")
+     */
+    private $denyMask = 0;
 
     /**
      * Get id
@@ -86,13 +92,26 @@ class Rule implements RuleInterface
     /**
      * @param integer $mask
      */
-    public function setMask($mask) {
-        $this->mask = $mask;
+    public function setAllowMask($allowMask) {
+        $this->allowMask = $allowMask;
     }
     /**
      * @return integer
      */
-    public function getMask() {
-        return $this->mask;
+    public function getAllowMask() {
+        return $this->allowMask;
+    }
+    
+    /**
+     * @param integer $mask
+     */
+    public function setDenyMask($denyMask) {
+        $this->denyMask = $denyMask;
+    }
+    /**
+     * @return integer
+     */
+    public function getDenyMask() {
+        return $this->denyMask;
     }
 }

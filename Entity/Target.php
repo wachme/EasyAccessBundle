@@ -41,6 +41,7 @@ class Target implements TargetInterface {
     private $ancestors;
     /**
      * @var ArrayCollection
+     * 
      * @ORM\OneToMany(targetEntity="Rule", mappedBy="target")
      */
     private $rules;
@@ -80,7 +81,13 @@ class Target implements TargetInterface {
         return $this->rules;
     }
     
+    public function addChild($target) {
+        $this->getChildren()->add($target);
+        $target->getAncestors()->add($this);
+    }
+    
     public function __construct() {
         $this->children = new ArrayCollection();
+        $this->ancestors = new ArrayCollection();
     }
 }

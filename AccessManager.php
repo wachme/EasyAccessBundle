@@ -84,7 +84,25 @@ class AccessManager {
             [$this->targetManager, 'findOrCreateClassField'],
             [$this->targetManager, 'findOrCreateObjectField']);
     }
-
+    /**
+     * @param TargetInterface $target
+     * @return array
+     */
+    private function getTargetQueue(TargetInterface $target) {
+        $queue = $target->getAncestors()->toArray();
+        
+        usort($queue, function(TargetInterface $a, TargetInterface $b) use ($target) {
+            if($a == $b)
+                return 0;
+        	return $a->getChildren()->exists(function($k, $e) use ($target) {
+                return $e->getId() == $target->getId();
+        	}) ? 1 : -1;
+        });
+        
+        $queue[] = $target;
+        return $queue;
+    }
+    
     /**
      * @param TargetManagerInterface $targetManager
      * @param SubjectManagerInterface $subjectManager
@@ -108,11 +126,27 @@ class AccessManager {
             $attributes = [$attributes];
         
         $target = $this->findOrCreateTarget($element);
-        
         $subject = $this->subjectManager->findOrCreateUser($user);
         $rule = $this->ruleManager->findOrCreate($target, $subject);
         $mask = $this->attributeMap->getMask($attributes);
-        $rule->setMask($mask);
+        $this->ruleManager->allow($rule, $mask);
+        
+        $this->em->flush();
+    }
+    /**
+     * @param string|array|object $element
+     * @param object $user
+     * @param string|array $attributes
+     */
+    public function deny($element, $user, $attributes) {
+        if(!is_array($attributes))
+            $attributes = [$attributes];
+        
+        $target = $this->findOrCreateTarget($element);
+        $subject = $this->subjectManager->findOrCreateUser($user);
+        $rule = $this->ruleManager->findOrCreate($target, $subject);
+        $mask = $this->attributeMap->getMask($attributes);
+        $this->ruleManager->deny($rule, $mask);
         
         $this->em->flush();
     }
@@ -141,7 +175,17 @@ class AccessManager {
             }
         );
 	    
-	    // TODO: make access decision
+	    $queue = $this->getTargetQueue($target);
+	    $mask = 0;
+	    foreach($queue as $t) {
+	        foreach($t->getRules() as $rule) {
+    	        $mask |= $rule->getAllowMask();
+    	        $mask &= ~$rule->getDenyMask();
+	        }
+	    }
+	    $requiredMask = $this->attributeMap->getMask($attributes);
+	    
+	    return ($mask & $requiredMask) == $requiredMask;
     }
     /**
      * @param string|array|object $element
