@@ -164,7 +164,6 @@ class TargetManagerTest extends DbTestCase {
         $created = $this->manager->createObject($object);
         $this->assertInstanceOf(get_class($target), $created);
         $this->em->flush();
-        var_dump($created->getAncestors());
         $this->assertNotNull($created->getId());
     }
     
@@ -193,7 +192,7 @@ class TargetManagerTest extends DbTestCase {
         $target->setName($field);
         
         $created = $this->manager->createClassField($class, $field);
-        $this->assertEquals($target, $created);
+        $this->assertInstanceOf(get_class($target), $created);
         $this->em->flush();
         $this->assertNotNull($created->getId());
     }
@@ -224,6 +223,7 @@ class TargetManagerTest extends DbTestCase {
         $target->setName($field);
         
         $created = $this->manager->createObjectField($object, $field);
+        $this->assertInstanceOf(get_class($target), $created);
         $this->em->flush();
         $this->assertNotNull($created->getId());
     }

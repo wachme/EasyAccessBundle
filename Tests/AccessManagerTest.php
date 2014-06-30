@@ -38,7 +38,8 @@ class AccessManagerTest extends DbTestCase {
         
         $this->manager->allow($class, $user, 'view');
         $this->manager->allow([$class, 'title'], $user, 'edit');
-        $this->manager->deny($object, $user, 'edit');
+        $this->manager->deny([$object, 'title'], $user, 'edit');
+        
         $this->em->clear();
         
         $this->assertTrue($this->manager->isAllowed([$object, 'title'], $user, 'view'));

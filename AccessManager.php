@@ -90,13 +90,12 @@ class AccessManager {
      */
     private function getTargetQueue(TargetInterface $target) {
         $queue = $target->getAncestors()->toArray();
-        
-        usort($queue, function(TargetInterface $a, TargetInterface $b) use ($target) {
+        usort($queue, function($a, $b) use ($target) {
             if($a == $b)
                 return 0;
         	return $a->getChildren()->exists(function($k, $e) use ($target) {
                 return $e->getId() == $target->getId();
-        	}) ? 1 : -1;
+        	}) ? -1 : 1;
         });
         
         $queue[] = $target;
