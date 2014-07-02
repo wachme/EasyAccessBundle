@@ -2,14 +2,12 @@
 
 namespace Wachme\Bundle\EasyAccessBundle\Manager;
 
-use Wachme\Bundle\EasyAccessBundle\Model\RuleManagerInterface;
-use Wachme\Bundle\EasyAccessBundle\Model\RuleInterface;
-use Wachme\Bundle\EasyAccessBundle\Model\TargetInterface;
-use Wachme\Bundle\EasyAccessBundle\Model\SubjectInterface;
 use Doctrine\ORM\EntityManager;
+use Wachme\Bundle\EasyAccessBundle\Entity\Target;
+use Wachme\Bundle\EasyAccessBundle\Entity\Subject;
 use Wachme\Bundle\EasyAccessBundle\Entity\Rule;
 
-class RuleManager implements RuleManagerInterface {
+class RuleManager {
     /**
      * @var EntityManager
      */
@@ -22,9 +20,11 @@ class RuleManager implements RuleManagerInterface {
         $this->em = $em;
     }
     /**
-     * {@inheritdoc}
+     * @param Target $target
+     * @param Subject $subject
+     * @return Rule
      */
-    public function create(TargetInterface $target, SubjectInterface $subject) {
+    public function create(Target $target, Subject $subject) {
         $rule = new Rule();
         $rule->setTarget($target);
         $rule->setSubject($subject);
@@ -32,29 +32,35 @@ class RuleManager implements RuleManagerInterface {
         return $rule;
     }
     /**
-     * {@inheritdoc}
+     * @param Target $target
+     * @param Subject $subject
+     * @return Rule|null
      */
-    public function find(TargetInterface $target, SubjectInterface $subject) {
+    public function find(Target $target, Subject $subject) {
         $repo = $this->em->getRepository('EasyAccessBundle:Rule');
         return $repo->findOneBy(['target' => $target->getId(), 'subject' => $subject->getId()]);
     }
     /**
-     * {@inheritdoc}
+     * @param Target $target
+     * @param Subject $subject
+     * @return Rule
      */
-    public function findOrCreate(TargetInterface $target, SubjectInterface $subject) {
+    public function findOrCreate(Target $target, Subject $subject) {
         return $this->find($target, $subject) ?: $this->create($target, $subject);
     }
     /**
-     * {@inheritdoc}
+     * @param Rule $rule
+     * @param integer $mask
      */
-    public function allow(RuleInterface $rule, $mask) {
+    public function allow(Rule $rule, $mask) {
         $rule->setAllowMask($mask);
         $rule->setDenyMask($rule->getDenyMask() & ~$mask);
     }
     /**
-     * {@inheritdoc}
+     * @param Rule $rule
+     * @param integer $mask
      */
-    public function deny(RuleInterface $rule, $mask) {
+    public function deny(Rule $rule, $mask) {
         $rule->setDenyMask($mask);
         $rule->setAllowMask($rule->getAllowMask() & ~$mask);
     }

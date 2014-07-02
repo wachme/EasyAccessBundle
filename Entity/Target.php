@@ -2,7 +2,6 @@
 
 namespace Wachme\Bundle\EasyAccessBundle\Entity;
 
-use Wachme\Bundle\EasyAccessBundle\Model\TargetInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Cache\ArrayCache;
@@ -15,7 +14,7 @@ use Doctrine\Common\Cache\ArrayCache;
  * @ORM\DiscriminatorColumn(name="discr", type="string")
  * @ORM\DiscriminatorMap({"class" = "ClassTarget", "object" = "ObjectTarget", "class_field" = "ClassFieldTarget", "object_field" = "ObjectFieldTarget"})
  */
-class Target implements TargetInterface {
+abstract class Target {
     /**
      * @var integer
      *
@@ -63,25 +62,28 @@ class Target implements TargetInterface {
         $this->children = $children;
     }
     /**
-     * {@inheritdoc}
+     * @return ArrayCollection
      */
     public function getChildren() {
         return $this->children;
     }
     /**
-     * {@inheritdoc}
+     * @return ArrayCollection
      */
     public function getAncestors() {
         return $this->ancestors;
     }
     /**
-     * {@inheritdoc}
+     * @return ArrayCollection
      */
     public function getRules() {
         return $this->rules;
     }
     
     public function addChild($target) {
+        if($this->getChildren()->contains($target))
+            return;
+        
         $this->getChildren()->add($target);
         $target->getAncestors()->add($this);
     }

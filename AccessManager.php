@@ -3,11 +3,11 @@
 namespace Wachme\Bundle\EasyAccessBundle;
 
 use Doctrine\ORM\EntityManager;
-use Wachme\Bundle\EasyAccessBundle\Model\TargetManagerInterface;
-use Wachme\Bundle\EasyAccessBundle\Model\SubjectManagerInterface;
-use Wachme\Bundle\EasyAccessBundle\Model\RuleManagerInterface;
 use Wachme\Bundle\EasyAccessBundle\Attribute\AttributeMap;
-use Wachme\Bundle\EasyAccessBundle\Model\TargetInterface;
+use Wachme\Bundle\EasyAccessBundle\Manager\TargetManager;
+use Wachme\Bundle\EasyAccessBundle\Manager\SubjectManager;
+use Wachme\Bundle\EasyAccessBundle\Manager\RuleManager;
+use Wachme\Bundle\EasyAccessBundle\Entity\Target;
 
 class AccessManager {
     
@@ -16,15 +16,15 @@ class AccessManager {
      */
     private $em;
     /**
-     * @var TargetManagerInterface
+     * @var TargetManager
      */
     private $targetManager;
     /**
-     * @var SubjectManagerInterface
+     * @var SubjectManager
      */
     private $subjectManager;
     /**
-     * @var RuleManagerInterface
+     * @var RuleManager
      */
     private $ruleManager;
     /**
@@ -75,7 +75,7 @@ class AccessManager {
     }
     /**
      * @param string|array|object $element
-     * @return TargetInterface
+     * @return Target
      */
     private function findOrCreateTarget($element) {
         return $this->resolveTarget($element,
@@ -85,17 +85,16 @@ class AccessManager {
             [$this->targetManager, 'findOrCreateObjectField']);
     }
     /**
-     * @param TargetInterface $target
+     * @param Target $target
      * @return array
      */
-    private function getTargetQueue(TargetInterface $target) {
+    private function getTargetQueue(Target $target) {
         $queue = $target->getAncestors()->toArray();
         usort($queue, function($a, $b) use ($target) {
             if($a == $b)
                 return 0;
-        	return $a->getChildren()->exists(function($k, $e) use ($target) {
-                return $e->getId() == $target->getId();
-        	}) ? -1 : 1;
+            
+            return $a->getChildren()->contains($b) ? -1 : 1;
         });
         
         $queue[] = $target;
@@ -103,12 +102,12 @@ class AccessManager {
     }
     
     /**
-     * @param TargetManagerInterface $targetManager
-     * @param SubjectManagerInterface $subjectManager
-     * @param RuleManagerInterface $ruleManager
+     * @param TargetManager $targetManager
+     * @param SubjectManager $subjectManager
+     * @param RuleManager $ruleManager
      * @param AttributeMap $attributeMap
      */
-    public function __construct(EntityManager $em, TargetManagerInterface $targetManager, SubjectManagerInterface $subjectManager, RuleManagerInterface $ruleManager, AttributeMap $attributeMap) {
+    public function __construct(EntityManager $em, TargetManager $targetManager, SubjectManager $subjectManager, RuleManager $ruleManager, AttributeMap $attributeMap) {
         $this->em = $em;
         $this->targetManager = $targetManager;
         $this->subjectManager = $subjectManager;
@@ -177,6 +176,7 @@ class AccessManager {
 	    $queue = $this->getTargetQueue($target);
 	    $mask = 0;
 	    foreach($queue as $t) {
+	        var_dump(get_class($t));
 	        foreach($t->getRules() as $rule) {
     	        $mask |= $rule->getAllowMask();
     	        $mask &= ~$rule->getDenyMask();

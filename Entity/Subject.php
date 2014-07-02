@@ -2,7 +2,6 @@
 
 namespace Wachme\Bundle\EasyAccessBundle\Entity;
 
-use Wachme\Bundle\EasyAccessBundle\Model\SubjectInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -11,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table()
  * @ORM\Entity
  */
-class Subject implements SubjectInterface
+class Subject
 {
     /**
      * @var integer

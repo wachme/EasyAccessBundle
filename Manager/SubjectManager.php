@@ -2,11 +2,10 @@
 
 namespace Wachme\Bundle\EasyAccessBundle\Manager;
 
-use Wachme\Bundle\EasyAccessBundle\Model\SubjectManagerInterface;
 use Doctrine\ORM\EntityManager;
 use Wachme\Bundle\EasyAccessBundle\Entity\Subject;
 
-class SubjectManager implements SubjectManagerInterface {
+class SubjectManager {
     
     /**
      * @var EntityManager
@@ -20,7 +19,8 @@ class SubjectManager implements SubjectManagerInterface {
         $this->em = $em;
     }
     /**
-     * {@inheritdoc}
+     * @param object $user
+     * @return Subject
      */
     public function createUser($user) {
         $subject = new Subject();
@@ -30,14 +30,16 @@ class SubjectManager implements SubjectManagerInterface {
         return $subject;
     }
     /**
-     * {@inheritdoc}
+     * @param object $user
+     * @return Subject|null
      */
     public function findUser($user) {
         $repo = $this->em->getRepository('EasyAccessBundle:Subject');
         return $repo->findOneBy(['type' => get_class($user), 'identifier' => $user->getId()]);
     }
     /**
-     * {@inheritdoc}
+     * @param object $user
+     * @return Subject
      */
     public function findOrCreateUser($user) {
         return $this->findUser($user) ?: $this->createUser($user);

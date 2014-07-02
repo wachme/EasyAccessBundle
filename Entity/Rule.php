@@ -2,10 +2,9 @@
 
 namespace Wachme\Bundle\EasyAccessBundle\Entity;
 
-use Wachme\Bundle\EasyAccessBundle\Model\RuleInterface;
-use Wachme\Bundle\EasyAccessBundle\Model\TargetInterface;
-use Wachme\Bundle\EasyAccessBundle\Model\SubjectInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Wachme\Bundle\EasyAccessBundle\Entity\Target;
+use Wachme\Bundle\EasyAccessBundle\Entity\Subject;
 
 /**
  * Rule
@@ -13,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table()
  * @ORM\Entity
  */
-class Rule implements RuleInterface
+class Rule
 {
     /**
      * @var integer
@@ -64,26 +63,26 @@ class Rule implements RuleInterface
     }
     
     /**
-     * @param TargetInterface $target
+     * @param Target $target
      */
-    public function setTarget(TargetInterface $target) {
+    public function setTarget(Target $target) {
         $this->target = $target;
     }
     /**
-     * @return TargetInterface
+     * @return Target
      */
     public function getTarget() {
         return $this->target;
     }
     
     /**
-     * @param SubjectInterface $subject
+     * @param Subject $subject
      */
-    public function setSubject(SubjectInterface $subject) {
+    public function setSubject(Subject $subject) {
         $this->subject = $subject;
     }
     /**
-     * @return SubjectInterface
+     * @return Subject
      */
     public function getSubject() {
         return $this->subject;

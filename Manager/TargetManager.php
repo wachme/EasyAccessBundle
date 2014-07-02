@@ -2,20 +2,19 @@
 
 namespace Wachme\Bundle\EasyAccessBundle\Manager;
 
-use Wachme\Bundle\EasyAccessBundle\Model\TargetManagerInterface;
 use Doctrine\ORM\EntityManager;
+use Wachme\Bundle\EasyAccessBundle\Entity\Target;
 use Wachme\Bundle\EasyAccessBundle\Entity\ClassTarget;
 use Wachme\Bundle\EasyAccessBundle\Entity\ObjectTarget;
 use Wachme\Bundle\EasyAccessBundle\Entity\ClassFieldTarget;
 use Wachme\Bundle\EasyAccessBundle\Entity\ObjectFieldTarget;
 use Doctrine\ORM\QueryBuilder;
-use Wachme\Bundle\EasyAccessBundle\Model\TargetInterface;
 use Wachme\Bundle\EasyAccessBundle\Query\TargetQuery;
 
 /**
  * Manages target entities in database
  */
-class TargetManager implements TargetManagerInterface {
+class TargetManager {
     /** 
      * @var EntityManager
      */
@@ -36,10 +35,10 @@ class TargetManager implements TargetManagerInterface {
         return $qb->getQuery()->getOneOrNullResult();
     }
     /**
-     * @param TargetInterface $target
-     * @param TargetInterface $parentTarget
+     * @param Target $target
+     * @param Target $parentTarget
      */
-    private function inherit($target, $parentTarget) {
+    private function inherit(Target $target, Target $parentTarget) {
         $parentTarget->addChild($target);
         if($children = $target->getChildren()) {
             foreach($children as $child)
@@ -64,7 +63,8 @@ class TargetManager implements TargetManagerInterface {
         $this->query = new TargetQuery();
     }
     /**
-     * {@inheritdoc}
+     * @param string $class
+     * @return ClassTarget
      */
     public function createClass($class) {
         $target = new ClassTarget();
@@ -73,7 +73,8 @@ class TargetManager implements TargetManagerInterface {
         return $target;
     }
     /**
-     * {@inheritdoc}
+     * @param object $object
+     * @return ObjectTarget
      */
     public function createObject($object) {
         $class = get_class($object);
@@ -90,7 +91,9 @@ class TargetManager implements TargetManagerInterface {
         return $target;
     }
     /**
-     * {@inheritdoc}
+     * @param string $class
+     * @param string $field
+     * @return ClassFieldTarget
      */
     public function createClassField($class, $field) {
         $classTarget = $this->findOrCreateClass($class);
@@ -105,70 +108,88 @@ class TargetManager implements TargetManagerInterface {
         return $target;
     }
     /**
-     * {@inheritdoc}
+     * @param object $object
+     * @param string $field
+     * @return ObjectFieldTarget
      */
     public function createObjectField($object, $field) {
         $objectTarget = $this->findOrCreateObject($object);
+        $classFieldTarget = $this->findOrCreateClassField(get_class($object), $field);
         
         $target = new ObjectFieldTarget();
         $target->setObject($objectTarget);
         $target->setName($field);
         $this->em->persist($target);
         
+        $this->inherit($target, $classFieldTarget);
         $this->inherit($target, $objectTarget);
         
         return $target;
     }
     /**
-     * {@inheritdoc}
+     * @param string $class
+     * @return ClassTarget|null
      */
     public function findClass($class) {
         return $this->getSelected([$this->query, 'selectClass'], [$class]);
     }
     /**
-     * {@inheritdoc}
+     * @param object $object
+     * @return ObjectTarget|null
      */
     public function findObject($object) {
         return $this->getSelected([$this->query, 'selectObject'], [$object]);
     }
     /**
-     * {@inheritdoc}
+     * @param string $class
+     * @param string $field
+     * @return ClassFieldTarget|null
      */
     public function findClassField($class, $field) {
         return $this->getSelected([$this->query, 'selectClassField'], [$class, $field]);
     }
     /**
-     * {@inheritdoc}
+     * @param object $object
+     * @param string $field
+     * @return ObjectFieldTarget|null
      */
     public function findObjectField($object, $field) {
         return $this->getSelected([$this->query, 'selectObjectField'], [$object, $field]);
     }
     /**
-     * {@inheritdoc}
+     * @param string $class
+     * @return ClassTarget
      */
     public function findOrCreateClass($class) {
         return $this->findClass($class) ?: $this->createClass($class);
     }
     /**
-     * {@inheritdoc}
+     * @param object $object
+     * @return ObjectTarget
      */
     public function findOrCreateObject($object) {
         return $this->findObject($object) ?: $this->createObject($object);
     }
     /**
-     * {@inheritdoc}
+     * @param string $class
+     * @param string $field
+     * @return ClassFieldTarget
      */
     public function findOrCreateClassField($class, $field) {
         return $this->findClassField($class, $field) ?: $this->createClassField($class, $field);
     }
     /**
-     * {@inheritdoc}
+     * @param object $object
+     * @param string $field
+     * @return ObjectFieldTarget
      */
     public function findOrCreateObjectField($object, $field) {
         return $this->findObjectField($object, $field) ?: $this->createObjectField($object, $field);
     }
     /**
-     * {@inheritdoc}
+     * @param string $class
+     * @param object $user
+     * @return Target|null
      */
     public function findClassSet($class, $user) {
         $qb = $this->em->createQueryBuilder();
@@ -179,7 +200,9 @@ class TargetManager implements TargetManagerInterface {
         return $qb->getQuery()->getOneOrNullResult();
     }
     /**
-     * {@inheritdoc}
+     * @param object $object
+     * @param object $user
+     * @return Target|null
      */
     public function findObjectSet($object, $user) {
         $qb = $this->em->createQueryBuilder();
@@ -194,7 +217,10 @@ class TargetManager implements TargetManagerInterface {
         return $target->getObjects()->isEmpty() ? $target : $target->getObjects()[0];
     }
     /**
-     * {@inheritdoc}
+     * @param string $class
+     * @param string $field
+     * @param object $user
+     * @return Target|null
      */
     public function findClassFieldSet($class, $field, $user) {
         $qb = $this->em->createQueryBuilder();
@@ -209,7 +235,10 @@ class TargetManager implements TargetManagerInterface {
         return $target->getFields()->isEmpty() ? $target : $target->getFields()[0];
     }
     /**
-     * {@inheritdoc}
+     * @param object $object
+     * @param string $field
+     * @param object $user
+     * @return Target|null
      */
     public function findObjectFieldSet($object, $field, $user) {
         $qb = $this->em->createQueryBuilder();
