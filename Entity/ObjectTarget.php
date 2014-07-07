@@ -30,23 +30,33 @@ class ObjectTarget extends Target {
 	 * @ORM\OneToMany(targetEntity="ObjectFieldTarget", mappedBy="object")
 	 */
 	private $fields;
-	
-	public function setClass($class) {
+	/**
+	 * @param ClassTarget $class
+	 */
+	public function setClass(ClassTarget $class) {
 	    $this->class = $class;
 	}
-	
+	/**
+	 * @return ClassTarget
+	 */
 	public function getClass() {
 	    return $this->class;
 	}
-	
+	/**
+	 * @param integer $identifier
+	 */
 	public function setIdentifier($identifier) {
 	    $this->identifier = $identifier;
 	}
-	
+	/**
+	 * @return integer
+	 */
 	public function getIdentifier() {
 	    return $this->identifier;
 	}
-	
+	/**
+	 * @return ArrayCollection
+	 */
 	public function getFields() {
 	    return $this->fields;
 	}

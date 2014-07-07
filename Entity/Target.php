@@ -85,19 +85,24 @@ abstract class Target {
     public function getRules() {
         return $this->rules;
     }
-    
-    public function addChild($target) {
+    /**
+     * @param Target $target
+     */
+    public function addChild(Target $target) {
         if($this->getChildren()->contains($target))
             return;
         
         $this->getChildren()->add($target);
-        $target->getAncestors()->add($this);
     }
-    
+    /**
+     * @param Target $parent
+     */
     public function setParent(Target $parent) {
         $this->parent = $parent;
     }
-    
+    /**
+     * @return Target
+     */
     public function getParent() {
         return $this->parent;
     }

@@ -2,10 +2,22 @@
 
 namespace Wachme\Bundle\EasyAccessBundle\Queue;
 
+use Wachme\Bundle\EasyAccessBundle\Queue\Strategy\QueueStrategy;
+use Wachme\Bundle\EasyAccessBundle\Entity\Target;
+
 class TargetQueue {
+    /**
+     * @var array
+     */
     private $strategies;
     
-    public function __construct($classStrategy, $objectStrategy, $classFieldStrategy, $objectFieldStrategy) {
+    /**
+     * @param QueueStrategy $classStrategy
+     * @param QueueStrategy $objectStrategy
+     * @param QueueStrategy $classFieldStrategy
+     * @param QueueStrategy $objectFieldStrategy
+     */
+    public function __construct(QueueStrategy $classStrategy, QueueStrategy $objectStrategy, QueueStrategy $classFieldStrategy, QueueStrategy $objectFieldStrategy) {
         $this->strategies = [
             'Wachme\\Bundle\\EasyAccessBundle\\Entity\\ClassTarget' => $classStrategy,
             'Wachme\\Bundle\\EasyAccessBundle\\Entity\\ObjectTarget' => $objectStrategy,
@@ -13,14 +25,20 @@ class TargetQueue {
             'Wachme\\Bundle\\EasyAccessBundle\\Entity\\ObjectFieldTarget' => $objectFieldStrategy
         ];
     }
-    
-    public function getParentQueue($target) {
+    /**
+     * @param Target $target
+     * @return array
+     */
+    public function getParentQueue(Target $target) {
         if($parent = $target->getParent())
             return array_merge($this->getQueue($parent), [$target]);
         return [$target];
     }
-    
-    public function getQueue($target) {
+    /**
+     * @param Target $target
+     * @return array
+     */
+    public function getQueue(Target $target) {
         $class = get_class($target);
         return $this->strategies[$class]->getQueue($target, $this);
     }

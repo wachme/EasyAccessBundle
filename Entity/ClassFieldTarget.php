@@ -23,19 +23,27 @@ class ClassFieldTarget extends Target {
 	 * @ORM\Column(type="string", length=255)
 	 */
 	private $name;
-	
-	public function setClass($class) {
+	/**
+	 * @param ClassTarget $class
+	 */
+	public function setClass(ClassTarget $class) {
 	    $this->class = $class;
 	}
-	
+	/**
+	 * @return ClassTarget
+	 */
 	public function getClass() {
 	    return $this->class;
 	}
-	
+	/**
+	 * @param string $name
+	 */
 	public function setName($name) {
 	    $this->name = $name;
 	}
-	
+	/**
+	 * @return string
+	 */
 	public function getName() {
 	    return $this->name;
 	}

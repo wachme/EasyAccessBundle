@@ -29,26 +29,39 @@ class ObjectFieldTarget extends Target {
 	 * @ORM\Column(type="string", length=255)
 	 */
 	private $name;
-	
-	public function setObject($object) {
+	/**
+	 * @param ObjectTarget $object
+	 */
+	public function setObject(ObjectTarget $object) {
 	    $this->object = $object;
 	}
-	
+	/**
+	 * @return ObjectTarget
+	 */
 	public function getObject() {
 	    return $this->object;
 	}
-	
-	public function setClassField($classField) {
+	/**
+	 * @param ClassFieldTarget $classField
+	 */
+	public function setClassField(ClassFieldTarget $classField) {
 	    $this->classField = $classField;
 	}
-	
+	/**
+	 * @return ClassFieldTarget
+	 */
 	public function getClassField() {
 	    return $this->classField;
 	}
+	/**
+	 * @param string $name
+	 */
 	public function setName($name) {
 	    $this->name = $name;
 	}
-	
+	/**
+	 * @return string
+	 */
 	public function getName() {
 	    return $this->name;
 	}

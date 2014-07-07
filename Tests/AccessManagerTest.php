@@ -8,6 +8,11 @@ use Wachme\Bundle\EasyAccessBundle\Manager\TargetManager;
 use Wachme\Bundle\EasyAccessBundle\Manager\SubjectManager;
 use Wachme\Bundle\EasyAccessBundle\Manager\RuleManager;
 use Wachme\Bundle\EasyAccessBundle\Attribute\AttributeMap;
+use Wachme\Bundle\EasyAccessBundle\Queue\TargetQueue;
+use Wachme\Bundle\EasyAccessBundle\Queue\Strategy\ClassQueueStrategy;
+use Wachme\Bundle\EasyAccessBundle\Queue\Strategy\ObjectQueueStrategy;
+use Wachme\Bundle\EasyAccessBundle\Queue\Strategy\ClassFieldQueueStrategy;
+use Wachme\Bundle\EasyAccessBundle\Queue\Strategy\ObjectFieldQueueStrategy;
 use Doctrine\DBAL\Logging\DebugStack;
 
 class AccessManagerTest extends DbTestCase {
@@ -24,7 +29,13 @@ class AccessManagerTest extends DbTestCase {
 	        new TargetManager($this->em),
             new SubjectManager($this->em),
             new RuleManager($this->em),
-            new AttributeMap()
+            new AttributeMap(),
+            new TargetQueue(
+    	        new ClassQueueStrategy(),
+                new ObjectQueueStrategy(),
+                new ClassFieldQueueStrategy(),
+                new ObjectFieldQueueStrategy()
+            )
         );
     }
     

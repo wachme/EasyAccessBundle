@@ -8,6 +8,7 @@ use Wachme\Bundle\EasyAccessBundle\Manager\TargetManager;
 use Wachme\Bundle\EasyAccessBundle\Manager\SubjectManager;
 use Wachme\Bundle\EasyAccessBundle\Manager\RuleManager;
 use Wachme\Bundle\EasyAccessBundle\Entity\Target;
+use Wachme\Bundle\EasyAccessBundle\Queue\TargetQueue;
 
 class AccessManager {
     
@@ -31,6 +32,10 @@ class AccessManager {
      * @var AttributeMap
      */
     private $attributeMap;
+    /**
+     * @var TargetQueue
+     */
+    private $targetQueue;
 
     /**
      * @param string|array|object $element
@@ -84,22 +89,6 @@ class AccessManager {
             [$this->targetManager, 'findOrCreateClassField'],
             [$this->targetManager, 'findOrCreateObjectField']);
     }
-    /**
-     * @param Target $target
-     * @return array
-     */
-    private function getTargetQueue(Target $target) {
-        $queue = $target->getAncestors()->toArray();
-        usort($queue, function($a, $b) use ($target) {
-            if($a == $b)
-                return 0;
-            
-            return $a->getChildren()->contains($b) ? -1 : 1;
-        });
-        
-        $queue[] = $target;
-        return $queue;
-    }
     
     /**
      * @param TargetManager $targetManager
@@ -107,12 +96,13 @@ class AccessManager {
      * @param RuleManager $ruleManager
      * @param AttributeMap $attributeMap
      */
-    public function __construct(EntityManager $em, TargetManager $targetManager, SubjectManager $subjectManager, RuleManager $ruleManager, AttributeMap $attributeMap) {
+    public function __construct(EntityManager $em, TargetManager $targetManager, SubjectManager $subjectManager, RuleManager $ruleManager, AttributeMap $attributeMap, TargetQueue $targetQueue) {
         $this->em = $em;
         $this->targetManager = $targetManager;
         $this->subjectManager = $subjectManager;
         $this->ruleManager = $ruleManager;
         $this->attributeMap = $attributeMap;
+        $this->targetQueue = $targetQueue;
     }
     /**
      * @param string|array|object $element
@@ -173,7 +163,7 @@ class AccessManager {
             }
         );
 	    
-	    $queue = $this->getTargetQueue($target);
+	    $queue = $this->targetQueue->getQueue($target);
 	    $mask = 0;
 	    foreach($queue as $t) {
 	        var_dump(get_class($t));
