@@ -34,26 +34,6 @@ class TargetManager {
         call_user_func_array($func, array_merge([$qb], $args));
         return $qb->getQuery()->getOneOrNullResult();
     }
-    /**
-     * @param Target $target
-     * @param Target $parentTarget
-     */
-    private function inherit(Target $target, Target $parentTarget) {
-        $parentTarget->addChild($target);
-        if($children = $target->getChildren()) {
-            foreach($children as $child)
-                $parentTarget->addChild($child);
-        }
-    
-        if($ancestors = $parentTarget->getAncestors()) {
-            foreach($ancestors as $ancestor) {
-                $ancestor->addChild($target);
-                if($children)
-                foreach($children as $child)
-                    $ancestor->addChild($child);
-            }
-        }
-    }
     
     /**
      * @param EntityManager $em
@@ -118,6 +98,7 @@ class TargetManager {
         
         $target = new ObjectFieldTarget();
         $target->setObject($objectTarget);
+        $target->setClassField($classFieldTarget);
         $target->setName($field);
         $this->em->persist($target);
         
@@ -125,6 +106,16 @@ class TargetManager {
         $this->inherit($target, $objectTarget);
         
         return $target;
+    }
+    /**
+     * @param Target $target
+     * @param Target $parentTarget
+     */
+    public function inherit(Target $target, Target $parentTarget) {
+        foreach(array_merge($target->getChildren()->toArray(), [$target]) as $child) {
+            foreach(array_merge($parentTarget->getAncestors()->toArray(), [$parentTarget]) as $ancestor)
+                $ancestor->addChild($child);
+        }
     }
     /**
      * @param string $class

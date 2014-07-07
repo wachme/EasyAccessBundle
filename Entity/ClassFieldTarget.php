@@ -15,7 +15,6 @@ class ClassFieldTarget extends Target {
      * @var ClassTarget
      *
      * @ORM\ManyToOne(targetEntity="ClassTarget", inversedBy="fields")
-     * @ORM\JoinColumn(nullable=false)
      */
 	private $class;
 	/**

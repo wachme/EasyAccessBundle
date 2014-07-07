@@ -15,9 +15,14 @@ class ObjectFieldTarget extends Target {
      * @var ObjectTarget
      * 
      * @ORM\ManyToOne(targetEntity="ObjectTarget", inversedBy="fields")
-     * @ORM\JoinColumn(nullable=false)
      */
 	private $object;
+	/**
+	 * @var ClassFieldTarget
+	 * 
+	 * @ORM\ManyToOne(targetEntity="ClassFieldTarget")
+	 */
+	private $classField;
 	/**
 	 * @var string
 	 *
@@ -33,6 +38,13 @@ class ObjectFieldTarget extends Target {
 	    return $this->object;
 	}
 	
+	public function setClassField($classField) {
+	    $this->classField = $classField;
+	}
+	
+	public function getClassField() {
+	    return $this->classField;
+	}
 	public function setName($name) {
 	    $this->name = $name;
 	}

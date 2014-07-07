@@ -44,6 +44,12 @@ abstract class Target {
      * @ORM\OneToMany(targetEntity="Rule", mappedBy="target")
      */
     private $rules;
+    /**
+     * @var Target
+     * 
+     * @ORM\ManyToOne(targetEntity="Target")
+     */
+    private $parent;
     
     /**
      * Get id
@@ -86,6 +92,14 @@ abstract class Target {
         
         $this->getChildren()->add($target);
         $target->getAncestors()->add($this);
+    }
+    
+    public function setParent(Target $parent) {
+        $this->parent = $parent;
+    }
+    
+    public function getParent() {
+        return $this->parent;
     }
     
     public function __construct() {

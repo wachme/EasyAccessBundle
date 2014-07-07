@@ -194,9 +194,8 @@ class AccessManager {
         $target = $this->findOrCreateTarget($element);
         $parentTarget = $this->findOrCreateTarget($parentElement);
         
-        // TODO: use TargetManager's method
-        
-        $parentTarget->getChildren()->add($target);
+        $target->setParent($parentTarget);
+        $this->targetManager->inherit($target, $parentTarget);
         
         $this->em->flush();
     }

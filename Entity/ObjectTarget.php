@@ -16,7 +16,6 @@ class ObjectTarget extends Target {
      * @var ClassTarget
      * 
      * @ORM\ManyToOne(targetEntity="ClassTarget", inversedBy="objects")
-     * @ORM\JoinColumn(nullable=false)
      */
 	private $class;
 	/**
